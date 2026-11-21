@@ -1,0 +1,1839 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IFFI 57 Navigator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f4fa; --surface:#ffffff; --surface2:#e9ebf5; --ink:#1b1f4b; --ink2:#5b5f86; --line:#dcdfee;
+  --blue:#3a4fa0; --pink:#e5007e; --warn:#b45309; --bad:#c81e3a;
+  --a-panjim:#3a4fa0; --a-porvorim:#108a55; --a-margao:#c8302a; --a-ponda:#7a3db0; --a-north:#b98500;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --text:"Instrument Sans", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  color-scheme: light;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0e1030; --surface:#181b44; --surface2:#23275a; --ink:#eef0fb; --ink2:#a5a9d0; --line:#2d3168;
+  --blue:#8ea0ff; --pink:#ff4fa7; --warn:#f2b84b; --bad:#ff6b81;
+  --a-panjim:#8ea0ff; --a-porvorim:#4fd394; --a-margao:#ff7a6e; --a-ponda:#c592ff; --a-north:#f2c94c;
+  color-scheme: dark; } }
+:root[data-theme="dark"]{
+  --bg:#0e1030; --surface:#181b44; --surface2:#23275a; --ink:#eef0fb; --ink2:#a5a9d0; --line:#2d3168;
+  --blue:#8ea0ff; --pink:#ff4fa7; --warn:#f2b84b; --bad:#ff6b81;
+  --a-panjim:#8ea0ff; --a-porvorim:#4fd394; --a-margao:#ff7a6e; --a-ponda:#c592ff; --a-north:#f2c94c;
+  color-scheme: dark; }
+html{ scroll-padding-top:env(safe-area-inset-top,0px); }
+*,*::before,*::after{ box-sizing:inherit; }
+body{ margin:0; background:var(--bg); color:var(--ink); font:400 15px/1.45 var(--text); -webkit-font-smoothing:antialiased; padding-bottom:84px; }
+body::before{ content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:10; background:var(--bg); }
+button{ font:inherit; color:inherit; cursor:pointer; }
+a{ color:inherit; }
+:focus-visible{ outline:2px solid var(--pink); outline-offset:2px; border-radius:6px; }
+h1,h2,h3{ margin:0; }
+.wrap{ max-width:760px; margin:0 auto; padding:0 16px; }
+
+/* header */
+.top{ position:sticky; top:env(safe-area-inset-top,0px); z-index:5; background:var(--bg); padding:14px 0 10px; }
+.brand{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; }
+.brand h1{ font:800 30px/0.95 var(--display); letter-spacing:-0.02em; display:flex; align-items:center; gap:8px; }
+.brand h1 svg{ width:22px; height:22px; }
+.brand p{ margin:4px 0 0; color:var(--ink2); font-size:13px; }
+.guidebtn{ border:1px solid var(--line); background:var(--surface); border-radius:999px; padding:7px 12px; font-size:13px; font-weight:600; white-space:nowrap; }
+
+/* day strip */
+.days{ display:flex; gap:6px; overflow-x:auto; padding:12px 16px 4px; margin:0 -16px; scrollbar-width:none; }
+.days::-webkit-scrollbar{ display:none; }
+.day{ flex:0 0 auto; min-width:62px; border:1px solid var(--line); background:var(--surface); border-radius:14px; padding:7px 8px 8px; display:flex; flex-direction:column; align-items:center; }
+.day .dw{ font-size:11px; color:var(--ink2); }
+.day .dn{ font:800 24px/1.05 var(--display); }
+.day .dc{ font-size:10.5px; color:var(--ink2); white-space:nowrap; }
+.day.on{ background:var(--blue); border-color:var(--blue); color:#fff; }
+.day.on .dw,.day.on .dc{ color:rgba(255,255,255,.8); }
+
+.ctrls{ display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+.chips{ display:flex; gap:6px; overflow-x:auto; margin:0 -16px; padding:0 16px; scrollbar-width:none; }
+.chips::-webkit-scrollbar{ display:none; }
+.chip{ flex:0 0 auto; border:1px solid var(--line); background:transparent; border-radius:999px; padding:5px 11px; font-size:13px; display:inline-flex; align-items:center; gap:6px; }
+.chip i{ width:8px; height:8px; border-radius:50%; background:var(--dot); }
+.chip.on{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+.seg{ display:inline-flex; background:var(--surface2); border-radius:10px; padding:3px; }
+.seg button{ border:0; background:transparent; padding:5px 12px; border-radius:8px; font-size:13px; font-weight:600; color:var(--ink2); }
+.seg button.on{ background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(20,24,70,.12); }
+.sumrow{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin:14px 0 4px; }
+.daysum{ font-size:13px; color:var(--ink2); display:flex; flex-wrap:wrap; gap:4px 12px; }
+.daysum b{ color:var(--ink); font:700 16px/1.2 var(--display); width:100%; }
+
+/* blocks & cards */
+.block{ margin-top:18px; }
+.bh{ font:700 19px/1.2 var(--display); display:flex; align-items:baseline; gap:8px; margin-bottom:8px; }
+.bh span{ font:500 12.5px var(--text); color:var(--ink2); }
+.card{ position:relative; display:flex; gap:12px; background:var(--surface); border-radius:16px; padding:12px 44px 12px 12px; margin-bottom:8px; border:1px solid var(--line); }
+.card.film{ cursor:pointer; }
+.card.past{ opacity:.5; }
+.tcol{ flex:0 0 42px; display:flex; flex-direction:column; align-items:flex-start; padding-top:1px; }
+.tcol b{ font:800 19px/1 var(--display); }
+.tcol span{ font-size:11px; color:var(--ink2); margin-top:2px; }
+.body{ min-width:0; flex:1; }
+.body h3{ font:700 16px/1.2 var(--display); letter-spacing:-0.005em; }
+.body h3.multi{ font-size:15px; display:flex; justify-content:space-between; gap:8px; padding:3px 0; cursor:pointer; }
+.body h3.multi + h3.multi{ border-top:1px dashed var(--line); }
+.body h3.multi small{ font:500 12px var(--text); color:var(--ink2); white-space:nowrap; }
+.kind{ font-size:12px; color:var(--ink2); margin-bottom:2px; display:flex; gap:8px; align-items:center; }
+.live{ font-style:normal; background:var(--pink); color:#fff; border-radius:999px; padding:1px 7px; font-size:11px; font-weight:600; }
+.meta{ margin:3px 0 0; font-size:13px; color:var(--ink2); display:flex; flex-wrap:wrap; gap:2px 10px; }
+.meta span:empty{ display:none; }
+.meta.big{ font-size:14px; }
+.row{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; margin-top:8px; }
+.ven{ --ac:var(--a-panjim); font-size:12px; font-weight:600; color:var(--ac); background:color-mix(in srgb, var(--ac) 12%, transparent); border-radius:6px; padding:2px 7px; white-space:nowrap; }
+.ven[data-area="porvorim"]{ --ac:var(--a-porvorim); } .ven[data-area="margao"]{ --ac:var(--a-margao); }
+.ven[data-area="ponda"]{ --ac:var(--a-ponda); } .ven[data-area="north"]{ --ac:var(--a-north); }
+.dur{ font-size:12px; color:var(--ink2); }
+.secs{ display:flex; flex-wrap:wrap; gap:4px 10px; margin-top:6px; }
+.dotl{ font-size:11.5px; color:var(--ink2); display:inline-flex; align-items:center; gap:5px; }
+.dotl::before{ content:""; width:7px; height:7px; border-radius:2px; background:var(--c); transform:rotate(45deg); }
+.pin{ position:absolute; top:8px; right:8px; width:34px; height:34px; border:0; background:transparent; border-radius:50%; display:grid; place-items:center; }
+.pin svg{ width:20px; height:20px; overflow:visible; }
+.pin svg path{ stroke:var(--ink2); stroke-width:2.2; }
+.pin.on svg path{ stroke:var(--pink); }
+.card.talk{ border-left:4px solid var(--ink); }
+.card.event{ border-left:4px solid var(--pink); }
+.empty{ color:var(--ink2); padding:30px 4px; text-align:center; }
+.lede{ color:var(--ink2); font-size:14px; margin:6px 0 10px; max-width:60ch; }
+
+/* generated posters */
+.poster{ position:relative; overflow:hidden; flex:0 0 auto; color:#fff; border-radius:10px;
+  background: radial-gradient(120% 90% at 85% 0%, hsl(var(--ph) 70% 55% / .55), transparent 60%), linear-gradient(165deg, var(--pc), color-mix(in srgb, var(--pc) 45%, #0b0d2a)); }
+.pstar{ position:absolute; transform:translate(-50%,-50%); aspect-ratio:1; }
+.pstar svg{ width:100%; height:100%; display:block; }
+.ptitle{ position:absolute; left:8%; right:8%; bottom:8%; font-family:var(--display); font-weight:800; line-height:.95; letter-spacing:-0.01em; text-transform:uppercase; overflow-wrap:anywhere; }
+.poster.sm{ width:46px; height:62px; border-radius:7px; }
+.poster.sm .ptitle{ font-size:8px !important; left:7%; right:7%; bottom:7%; }
+.poster.md{ width:100%; aspect-ratio:2/3; }
+.poster.lg{ width:150px; aspect-ratio:2/3; border-radius:14px; box-shadow:0 10px 30px -12px color-mix(in srgb, var(--pc) 70%, transparent); }
+.poster.lg .ptitle{ bottom:16%; }
+.pmeta{ position:absolute; left:8%; right:8%; bottom:6%; font-size:10px; opacity:.85; }
+
+/* timeline */
+.hint{ font-size:12.5px; color:var(--ink2); margin:12px 0 8px; }
+.tl{ margin:0 -16px; }
+.tlscroll{ overflow-x:auto; overscroll-behavior-x:contain; padding:0 16px 10px; }
+.thead,.trow{ display:flex; }
+.tlab{ flex:0 0 96px; position:sticky; left:-16px; z-index:2; background:var(--bg); padding:6px 8px 6px 0; display:flex; flex-direction:column; justify-content:center; }
+.tlab b{ font:700 12.5px/1.15 var(--display); }
+.tlab span{ font-size:10.5px; color:var(--ink2); }
+.hours{ position:relative; height:22px; border-bottom:1px solid var(--line); }
+.hours span{ position:absolute; top:2px; font-size:11px; color:var(--ink2); transform:translateX(-50%); }
+.tbody{ position:relative; }
+.tlane{ position:relative; height:58px; border-bottom:1px solid var(--line);
+  background-image:repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 90px); }
+.blk{ position:absolute; top:6px; height:46px; border:0; border-radius:8px; background:var(--c); color:#fff; text-align:left; padding:4px 7px; overflow:hidden; display:flex; flex-direction:column; justify-content:center; }
+.blk b{ font:700 11.5px/1.15 var(--display); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.blk span{ font-size:10px; opacity:.85; }
+.blk.on{ box-shadow:0 0 0 2px var(--bg), 0 0 0 4px var(--pink); }
+.blk.talk{ background:var(--ink); color:var(--bg); }
+.nowwrap{ position:absolute; top:0; bottom:0; left:96px; pointer-events:none; }
+.nowline{ position:absolute; top:0; bottom:0; width:2px; background:var(--pink); }
+.nowline::before{ content:"now"; position:absolute; top:-1px; left:4px; font-size:10px; color:var(--pink); font-weight:600; }
+
+/* films */
+.fsearch{ display:flex; gap:8px; align-items:center; margin-top:12px; }
+.fsearch input{ flex:1; min-width:0; border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:12px; padding:10px 12px; font:inherit; }
+.fbar{ display:flex; justify-content:space-between; align-items:center; margin:14px 0 8px; font-size:13px; color:var(--ink2); }
+.grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px 12px; }
+.fcard{ position:relative; cursor:pointer; }
+.fcard .fb h3{ font:700 14.5px/1.2 var(--display); margin-top:7px; }
+.fcard .meta{ font-size:12px; }
+.fx{ font-size:11.5px; color:var(--ink2); margin:3px 0 0; }
+.wl{ position:absolute; top:6px; right:6px; width:22px; height:22px; background:#fff; border-radius:50%; display:grid; place-items:center; }
+.wl svg{ width:14px; height:14px; }
+
+/* sheet */
+.sheet{ position:fixed; inset:0; z-index:20; }
+.scrim{ position:absolute; inset:0; background:rgba(10,12,40,.45); opacity:0; transition:opacity .2s; }
+.panel{ position:absolute; left:0; right:0; bottom:0; max-height:92vh; max-height:92dvh; overflow-y:auto; background:var(--bg); border-radius:22px 22px 0 0; padding:8px 18px calc(28px + env(safe-area-inset-bottom,0px)); transform:translateY(100%); transition:transform .22s ease-out; max-width:760px; margin:0 auto; }
+.sheet.open .scrim{ opacity:1; } .sheet.open .panel{ transform:none; }
+@media (prefers-reduced-motion: reduce){ .panel,.scrim{ transition:none; } }
+.grab{ display:flex; justify-content:center; position:sticky; top:-8px; background:var(--bg); padding:6px 0 4px; z-index:1; }
+.grab span{ width:40px; height:4px; border-radius:2px; background:var(--line); }
+.closebtn{ position:absolute; right:0; top:2px; border:0; background:var(--surface2); border-radius:999px; padding:5px 12px; font-size:13px; font-weight:600; }
+.hero{ display:flex; gap:16px; align-items:flex-end; margin-top:10px; }
+.hinfo{ min-width:0; flex:1; }
+.hinfo h2{ font:800 26px/1.02 var(--display); letter-spacing:-0.02em; margin:8px 0 6px; }
+.hsecs{ display:flex; flex-wrap:wrap; gap:5px; }
+.sec{ border:0; background:color-mix(in srgb, var(--c) 14%, transparent); color:var(--c); font-size:11.5px; font-weight:600; border-radius:6px; padding:3px 7px; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .sec{ color:color-mix(in srgb, var(--c) 45%, white); } }
+.btn{ margin-top:10px; border:1.5px solid var(--pink); color:var(--pink); background:transparent; border-radius:999px; padding:7px 14px; font-weight:600; font-size:13.5px; display:inline-flex; align-items:center; gap:6px; }
+.btn svg{ width:14px; height:14px; } .btn svg path{ stroke:currentColor; stroke-width:3; }
+.btn.on{ background:var(--pink); color:#fff; }
+@media (max-width:420px){ .hero{ flex-direction:column; align-items:flex-start; } .poster.lg{ width:130px; } }
+.sh{ font:700 17px/1.2 var(--display); margin:22px 0 8px; display:flex; gap:8px; align-items:baseline; }
+.sh span{ font:500 12.5px var(--text); color:var(--ink2); }
+.comp{ margin-top:16px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px; }
+.comp > b{ font-size:13px; color:var(--ink2); font-weight:600; }
+.comp p{ margin:6px 0 0; font-size:12px; color:var(--ink2); }
+.clink{ display:block; width:100%; text-align:left; border:0; background:transparent; padding:6px 0; font:700 15px/1.25 var(--display); }
+.clink small{ display:block; font:400 12px var(--text); color:var(--ink2); }
+.shows{ display:flex; flex-direction:column; gap:6px; }
+.show{ display:flex; justify-content:space-between; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
+.show > div{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; }
+.show > div b{ width:100%; font-weight:600; }
+.show.cur{ border-color:var(--blue); }
+.show.past{ opacity:.5; }
+.qa{ font-size:11.5px; color:var(--ink2); }
+.addbtn{ border:1.5px solid var(--ink); background:transparent; border-radius:999px; padding:5px 14px; font-size:13px; font-weight:600; white-space:nowrap; }
+.addbtn.on{ background:var(--pink); border-color:var(--pink); color:#fff; }
+.links{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.links a{ text-decoration:none; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px 12px; display:flex; flex-direction:column; }
+.links a b{ font-weight:600; font-size:14px; }
+.links a span{ font-size:12px; color:var(--ink2); }
+.secnote{ display:flex; gap:12px; align-items:flex-start; justify-content:space-between; border-left:4px solid var(--c); background:var(--surface); border-radius:0 12px 12px 0; padding:10px 12px; margin-bottom:8px; }
+.secnote b{ font:700 15px var(--display); } .secnote p{ margin:3px 0 0; font-size:13px; color:var(--ink2); }
+.secnote.big b{ font-size:22px; }
+.x{ border:1px solid var(--line); background:transparent; border-radius:999px; padding:4px 10px; font-size:12px; white-space:nowrap; }
+.minilist{ display:flex; flex-direction:column; gap:6px; }
+.mrow{ display:flex; gap:10px; align-items:center; text-align:left; border:0; background:var(--surface); border-radius:12px; padding:8px; }
+.mrow b{ display:block; font:700 14px/1.2 var(--display); } .mrow small{ color:var(--ink2); font-size:12px; }
+.gt{ font:800 26px/1.05 var(--display); margin:12px 0 4px; }
+.gg{ margin-top:16px; border-top:3px solid var(--c); padding-top:8px; }
+.gg h3{ font:700 17px var(--display); color:var(--c); margin-bottom:4px; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .gg h3{ color:color-mix(in srgb, var(--c) 45%, white); } }
+.gs{ display:grid; grid-template-columns:1fr auto; gap:0 10px; width:100%; text-align:left; border:0; background:transparent; padding:8px 0; border-bottom:1px solid var(--line); }
+.gs b{ font-weight:600; } .gs span{ grid-column:1; font-size:13px; color:var(--ink2); } .gs em{ grid-row:1; grid-column:2; font-style:normal; font-size:12px; color:var(--ink2); }
+
+/* plan */
+.pday{ margin-top:18px; }
+.pitem{ display:flex; gap:12px; align-items:center; position:relative; background:var(--surface); border:1px solid var(--line); border-left:4px solid var(--c); border-radius:4px 14px 14px 4px; padding:10px 44px 10px 12px; margin-bottom:8px; cursor:pointer; }
+.ptime{ flex:0 0 74px; } .ptime b{ display:block; font:700 14px var(--display); } .ptime span{ font-size:11.5px; color:var(--ink2); }
+.pbody h3{ font:700 15px/1.2 var(--display); margin-bottom:5px; }
+.warn{ margin:-2px 0 8px 8px; font-size:12.5px; color:var(--warn); padding-left:10px; border-left:2px solid var(--warn); }
+.warn.bad{ color:var(--bad); border-color:var(--bad); }
+.banner{ background:color-mix(in srgb, var(--bad) 12%, transparent); color:var(--bad); border-radius:12px; padding:10px 12px; font-weight:600; font-size:14px; margin-top:14px; }
+.wrow{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:10px; margin-bottom:8px; }
+.wt{ display:flex; gap:10px; align-items:center; cursor:pointer; } .wt h3{ font:700 15px/1.2 var(--display); }
+.opts{ display:flex; gap:6px; overflow-x:auto; margin-top:8px; scrollbar-width:none; }
+.opt{ flex:0 0 auto; border:1px dashed var(--ink2); background:transparent; border-radius:10px; padding:6px 10px; font-size:12.5px; font-weight:600; text-align:left; }
+.opt small{ display:block; font-weight:400; color:var(--ink2); font-size:11px; }
+.emptyplan{ text-align:center; padding:48px 20px; }
+.emptyplan svg{ width:40px; height:40px; }
+.emptyplan h3{ font:800 24px var(--display); margin:10px 0 6px; }
+.emptyplan p{ color:var(--ink2); max-width:40ch; margin:0 auto; }
+.emptyplan .btn{ margin-top:16px; }
+
+/* around */
+.area{ margin-bottom:14px; }
+.ah{ margin:10px 0 6px; }
+.ah .ven{ font-size:13px; }
+.vrow{ display:flex; align-items:center; gap:10px; text-decoration:none; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-bottom:6px; }
+.vrow div{ flex:1; min-width:0; } .vrow b{ display:block; font:700 15px var(--display); } .vrow span{ font-size:12px; color:var(--ink2); }
+.vrow em{ font-style:normal; font-size:12px; color:var(--ink2); white-space:nowrap; }
+.vrow i{ font-style:normal; font-size:12px; font-weight:600; color:var(--blue); }
+.dist{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.dist div{ background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:8px 10px; display:flex; flex-direction:column; }
+.dist span{ font-size:12px; color:var(--ink2); } .dist b{ font:700 16px var(--display); }
+.rk{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-bottom:6px; }
+.rk b{ font:700 15px var(--display); } .rk p{ margin:2px 0 0; font-size:13px; color:var(--ink2); }
+.bus{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:8px; }
+.bhd b{ font:800 17px var(--display); margin-right:8px; } .bhd span{ font-size:13px; color:var(--ink2); }
+.stops{ list-style:none; margin:10px 0 0; padding:0 0 0 14px; border-left:2px dashed var(--line); }
+.stops li{ position:relative; font-size:13px; padding:3px 0; }
+.stops li::before{ content:""; position:absolute; left:-20px; top:9px; width:8px; height:8px; border-radius:50%; background:var(--surface); border:2px solid var(--blue); }
+.stops li.end{ font-weight:600; } .stops li.end::before{ background:var(--blue); }
+
+/* bottom nav */
+.nav{ position:fixed; left:0; right:0; bottom:0; z-index:6; background:color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-top:1px solid var(--line); padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px)); }
+.nav .in{ max-width:760px; margin:0 auto; display:flex; }
+.nav button{ flex:1; border:0; background:transparent; display:flex; flex-direction:column; align-items:center; gap:2px; font-size:11px; color:var(--ink2); padding:4px 0; position:relative; }
+.nav button svg{ width:22px; height:22px; }
+.nav button.on{ color:var(--pink); font-weight:600; }
+.badge{ position:absolute; top:0; left:calc(50% + 6px); background:var(--pink); color:#fff; font-size:10px; font-weight:700; border-radius:999px; min-width:16px; height:16px; padding:0 4px; display:grid; place-items:center; }
+
+/* people & booking */
+.by{ width:100%; } .plink{ border:0; background:none; padding:0; font:inherit; color:var(--blue); font-weight:600; text-decoration:underline; text-underline-offset:2px; }
+.ppl{ display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; }
+.pchip{ border:1px solid var(--line); background:var(--bg); border-radius:999px; padding:3px 9px; font-size:12px; font-weight:500; }
+.pchip small{ color:var(--ink2); } .pchip.mod{ border-style:dashed; }
+.person{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px; margin-bottom:8px; }
+.person.big{ background:transparent; border:0; padding:8px 0 0; }
+.phead{ display:flex; gap:10px; align-items:center; }
+.avatar{ flex:0 0 40px; height:40px; border-radius:50%; display:grid; place-items:center; color:#fff; font:700 14px var(--display); background:linear-gradient(135deg, hsl(var(--ph) 60% 45%), hsl(calc(var(--ph) + 40) 60% 30%)); }
+.person.big .avatar{ flex-basis:56px; height:56px; font-size:19px; }
+.person.big h2{ font:800 26px/1.05 var(--display); }
+.pname{ border:0; background:none; padding:0; font:700 16px var(--display); text-align:left; display:block; }
+.prole{ display:block; font-size:12.5px; color:var(--ink2); }
+.pbio{ font-size:13.5px; margin:8px 0 0; max-width:62ch; } .muted{ color:var(--ink2); }
+.works{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; align-items:center; }
+.wl2{ width:100%; font-size:12px; color:var(--ink2); font-weight:600; }
+.works a,.here{ text-decoration:none; border:1px solid var(--line); background:var(--bg); border-radius:8px; padding:4px 8px; font-size:12.5px; font-weight:600; display:inline-flex; flex-direction:column; text-align:left; }
+.works small,.here small{ font-weight:400; color:var(--ink2); font-size:11px; }
+.here{ border-color:color-mix(in srgb, var(--pink) 45%, var(--line)); }
+.plinks{ display:flex; flex-wrap:wrap; gap:12px; margin-top:10px; font-size:13px; }
+.plinks a{ color:var(--blue); font-weight:600; text-underline-offset:2px; }
+.sbtns{ display:flex; gap:6px; flex:0 0 auto; }
+.bookbtn{ text-decoration:none; background:var(--blue); color:#fff; border-radius:999px; padding:6px 14px; font-size:13px; font-weight:600; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .bookbtn{ color:#0e1030; } }
+:root[data-theme="dark"] .bookbtn{ color:#0e1030; }
+.bookbox{ margin-top:12px; background:color-mix(in srgb, var(--blue) 9%, var(--surface)); border-radius:14px; padding:12px 14px; }
+.bookbox b{ font:700 15px var(--display); } .bookbox p{ margin:5px 0 0; font-size:13.5px; max-width:62ch; }
+.bookrow{ display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; margin-top:10px; font-size:13px; }
+.bookrow a{ color:var(--blue); font-weight:600; }
+.bookrow a.bookcta{ background:var(--blue); color:#fff; text-decoration:none; border-radius:999px; padding:7px 14px; }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .bookrow a.bookcta{ color:#0e1030; } }
+.bookrow .btn{ margin-top:0; text-decoration:none; }
+.talkhero{ margin-top:12px; } .talkhero h2{ font:800 24px/1.1 var(--display); margin:8px 0 6px; }
+.kindtag{ font-size:12px; font-weight:600; background:var(--ink); color:var(--bg); border-radius:6px; padding:2px 8px; }
+.card.talk{ cursor:pointer; }
+
+.avatar{ position:relative; overflow:hidden; }
+.avatar img,.mini img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:50% 25%; }
+.person.big .avatar{ flex-basis:96px; height:96px; font-size:28px; }
+.person .avatar{ flex-basis:52px; height:52px; }
+.mini{ position:relative; overflow:hidden; width:20px; height:20px; border-radius:50%; flex:0 0 20px; background:linear-gradient(135deg, hsl(var(--ph) 60% 50%), hsl(calc(var(--ph) + 40) 60% 32%)); }
+.pchip{ display:inline-flex; align-items:center; gap:6px; padding-left:3px; }
+.credit{ display:inline-block; font-size:11px; color:var(--ink2); margin-top:2px; }
+
+.posterlink{ text-decoration:none; display:flex; flex-direction:column; align-items:center; gap:5px; flex:0 0 auto; }
+.posterlink span{ font-size:11.5px; color:var(--blue); font-weight:600; }
+.note{ margin:14px 0 0; padding:10px 12px; border-radius:12px; background:color-mix(in srgb, var(--pink) 9%, var(--surface)); font-size:14px; }
+.wx{ font-size:14px; margin:0; max-width:64ch; }
+.byg{ margin-top:6px; }
+.bygrow{ display:grid; grid-template-columns:96px 1fr; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); font-size:13.5px; }
+.bygrow > span{ color:var(--ink2); font-size:12.5px; font-weight:600; }
+.bygrow a{ color:var(--blue); font-weight:600; }
+.basesel{ display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; }
+.basesel select{ font:inherit; color:var(--ink); background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:4px 6px; }
+.planbar{ display:flex; flex-wrap:wrap; gap:6px 10px; align-items:center; margin-top:14px; font-size:12.5px; }
+.lb{ display:block; margin-top:5px; font-size:12px; font-weight:600; color:var(--pink); }
+.foot{ font-size:12px; color:var(--ink2); margin:28px 0 8px; }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand">
+    <div><h1><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 0C21.5 13 27 18.5 40 20 27 21.5 21.5 27 20 40 18.5 27 13 21.5 0 20 13 18.5 18.5 13 20 0Z" fill="#e5007e"/></svg>IFFI 57</h1>
+    <p>Goa, 20 to 28 November 2026</p></div>
+    <button class="guidebtn" data-guide>What the sections mean</button>
+  </div>
+</div></header>
+
+<main class="wrap">
+  <section id="tab-schedule" class="tab">
+    <div class="days" id="days" role="group" aria-label="Festival day"></div>
+    <div class="ctrls">
+      <div class="chips" id="areas" role="group" aria-label="Area"></div>
+      <div class="chips" id="groups" role="group" aria-label="Section"></div>
+    </div>
+    <div class="sumrow"><div class="daysum" id="daysum"></div>
+      <div class="seg" role="group" aria-label="View"><button data-view="list">List</button><button data-view="timeline">Timeline</button></div></div>
+    <div id="sched"></div>
+    <p class="foot">From the official schedule PDF. The festival notes it may change, so check the IFFI website or app before you head out.</p>
+  </section>
+
+  <section id="tab-films" class="tab" hidden>
+    <div class="fsearch"><input id="fq" type="search" placeholder="Search title, director, country, language" aria-label="Search films"></div>
+    <div class="chips" id="fgroups" style="margin-top:10px" role="group" aria-label="Section"></div>
+    <div id="fsecnote" style="margin-top:12px"></div>
+    <div class="fbar"><span id="fcount"></span><div class="seg" role="group" aria-label="Sort"><button data-fsort="az">A–Z</button><button data-fsort="shows">Most shown</button><button data-fsort="len">Shortest</button></div></div>
+    <div class="grid" id="films"></div>
+  </section>
+
+  <section id="tab-plan" class="tab" hidden><div id="plan"></div></section>
+  <section id="tab-talks" class="tab" hidden><div id="talks"></div></section>
+  <section id="tab-around" class="tab" hidden><div id="around"></div></section>
+</main>
+
+<nav class="nav" aria-label="Sections"><div class="in">
+  <button data-tab="schedule"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Schedule</button>
+  <button data-tab="films"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>Films</button>
+  <button data-tab="plan"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 3C21.3 14 26 18.7 37 20 26 21.3 21.3 26 20 37 18.7 26 14 21.3 3 20 14 18.7 18.7 14 20 3Z"/></svg>My plan<span class="badge" id="planbadge" hidden></span></button>
+  <button data-tab="talks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Talks</button>
+  <button data-tab="around"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Getting around</button>
+</div></nav>
+
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheettitle">
+  <div class="scrim" id="scrim"></div>
+  <div class="panel" id="sheetpanel"><div class="grab"><span></span><button class="closebtn" id="sheetclose">Close</button></div><div id="sheetbody"></div></div>
+</div>
+<script>
+const FILM_DATA = `
+fatherland|FATHERLAND|Paweł Pawlikowski|Poland, Germany, Italy, France|German, English, French, Russian|82|2026|OF
+strangers|WE ARE ALL STRANGERS|Anthony Chen|Singapore|Mandarin, English|157|2026|CF
+lookback|LOOK BACK|Hirokazu Koreeda|Japan|Japanese|100||CW
+aqui|AQUÍ|Tiago Guedes|Portugal, France|Spanish|204|2026|IC
+pushpak|PUSHPAK VIMAN (2 EPISODES)|Sudip Sharma|India|Hindi|90|2026|GALA
+samurai|THE SAMURAI AND THE PRISONER|Kiyoshi Kurosawa|Japan|Japanese|147|2026|CW
+becoming|BECOMING|Leena Yadav|India|Ladakhi|12||IP-NF
+dhurandhar|DHURANDHAR|Aditya Dhar|India|Hindi|209||IP-FF
+redcarpet|RED CARPET|Aimee Baruah|India|Assamese|30||IP-NF
+urum|URUM|Duyu Tabyo|India|Nyishi|143||IP-FF
+thaai|THAAI KIZHAVI|Sivakumar Murugesan|India|Tamil|142||IP-FF
+maverick|MAVERICK: THE EPIC ADVENTURES OF DAVID LEAN|Barnaby Thompson|UK, USA|English|110|2026|FAF
+callmequeen|CALL ME QUEEN|Emily Atef|Germany, France, UK|English|105|2026|ICFT
+placetoheal|A PLACE TO HEAL|Cédric Kahn|France|French|104|2026|CW
+sunspots|SUNSPOTS|Anton von Heiseler|Germany|German, English|91|2026|CW
+jaripeo|JARIPEO|Efraín Mojica, Rebecca Zweig|Mexico, USA, France|Spanish|75|2026|DOC
+drag|DRAG|Raviv Ullman, Greg Yagolnitzer|USA|English|86|2026|MAC
+congoboy|CONGO BOY|Rafiki Fariala|Central African Republic, France, Congo, Italy|Sango, French, Lingala, Swahili|91|2026|EF
+ancessao|ANCESSAO|Manguirish J. Bandodkar|India|Konkani|30||GOAN
+newhome|NEW HOME|Nikita Grushin|Russia|Russian|101|2026|PC-R
+michael|LOOKING FOR MICHAEL|Juana Macías|Spain|Spanish|101|2026|CH-S,GALA
+shadowsedge|SHADOW’S EDGE|Larry Yang|China, Hong Kong|Mandarin Chinese|141|2025|CW
+lagaan|LAGAAN|Ashutosh Gowariker|India|Hindi|224||SP-I
+kannappa|BHAKTA KANNAPPA|Bapu|India|Telugu|148||GJ-I
+ramgao|RAMGAO|Dimple Dugar|India|Hindi|9||SP-I
+dera|DERA|Dr. Sudhir Aazad|India|Hindi|73||SP-I
+fortunate|THE FORTUNATE ISLES|Helena Girón, Samuel Delgado|Spain, Greece|Spanish, French, Arabic|80|2026|CW
+ulya|ULYA|Viesturs Kairišs|Latvia, Estonia, Poland, Lithuania|Latvian, Russian|102|2026|CW
+fullphil|FULL PHIL|Quentin Dupieux|France, Belgium, Luxembourg|English, French|78|2026|CW
+queenatsea|QUEEN AT SEA|Lance Hammer|UK|English|121|2026|CW
+zejtune|ZEJTUNE|Alex Camilleri|Malta, Germany, Qatar|Maltese|107|2026|CW
+oasis|OASIS|Jannis Lenz|Germany, Austria|German|118|2026|EF
+maternal|FOREVER YOUR MATERNAL ANIMAL|Valentina Maurel|Belgium, France, Mexico|Spanish|108|2026|EF
+dontbelong|YOU DON’T BELONG HERE|Florin Şerban|Romania|Romanian|154|2026|FFW
+titanic|TITANIC OCEAN|Konstantina Kotzamani|Greece, Germany, Romania, France, Spain, Japan|Japanese|131|2026|EF
+chicacheca|CHICA CHECA|Šimon Holý|Czech Republic, France, Slovakia|Czech, French|96|2026|CW
+diane|DIANE IN THE LOOP|Ann Sirot, Raphaël Balboni|Belgium, France|French|92|2026|CW
+suzhou|SUZHOU QUARTET|Cai Chengjie|China|Mandarin|132|2026|EXP
+untilday|UNTIL THE DAY ENDS|Jelena Maksimović|Serbia, Bulgaria, Slovenia, Montenegro, Germany, Croatia|Serbo-Croatian|90|2026|EF
+drumskin|DRUMSKIN|Joaquín Cambre|Argentina|Spanish|83|2026|CW
+smallgods|SMALL GODS|Asher Rosen|Uganda, UK|Kinyarwanda, English|106|2025|CW
+nobodys|NOBODY’S VIOLENCE|Denis Côté|Canada|French|118|2026|CW
+billevans|EVERYBODY DIGS BILL EVANS|Grant Gee|Ireland, UK|English|102|2026|FFW
+lightpillar|LIGHT PILLAR|Xu Zao|China|Chinese|90|2026|ANI
+waking|WAKING HOURS|Federico Cammarata, Filippo Foscarini|Italy|Pashto, Dari|78|2025|DOC
+katharkatha|KATHAR KATHA|Dhritisree Sarkar|India|Bengali|27||IP-NF
+rubycube|RUBY-CUBE|P. Sheshadri|India|Kannada|106||IP-FF
+naqsh|NAQSH-E-DAUR|Baba Tassaduq Hussain|India|Kashmiri|13||IP-NF
+banaras|BANARAS|Bharatbala Ganapathy|India|Hindi|101||IP-FF
+nirmanjali|NIRMANJALI: THE CHANDIGARH OF MACIEJ NOWICKI|Suraj Kumar|India|English|40||IP-NF
+surjyamukhi|SURJYAMUKHI|Antara G.G. Choudhury|India|Assamese|124||IP-FF
+singgeetham|SING GEETHAM|Singeetham Srinivasa Rao|India|Telugu|137||IP-FF
+everytime|EVERYTIME|Sandra Wollner|Austria, Germany|German, Spanish|121|2026|FFW
+ramayana|RAMAYANA: RISE OF A LEGEND (PART 1)|Nitesh Tiwari|India|Hindi|195|2026|BRICS
+raygunn|RAY GUNN|Brad Bird|USA|English|116|2026|ANI,GALA
+prayforus|PRAY FOR US|Daniel Monzón|Spain, France|Spanish|136|2026|IC
+kashmirkikali|KASHMIR KI KALI|Shakti Samanta|India|Hindi|168||CC-I
+umesh|UMESH|Vardhan Vijaykumar Kamat|India|Konkani|99||GOAN
+shakuntala|SHAKUNTALA|Prasad M. Naik|India|Konkani|11||GOAN
+baghuni|BAGHUNI – DANCE LIKE A TIGER|Jitendra Mishra|India|Odia|92|2026|GALA
+carlossuara|CARLOS SUARA, THE KID IN THE PHOTO|Anna Suara|Spain, Argentina|Spanish|82|2026|GALA
+joyboy|JOY BOY: A TRIBUTE TO JULIUS EASTMAN|Mawena Yehouessi, Fallon Mayanja, Rob Jacobs, Anne Reijniers, Paul Shemisi, Victoire Karera Kampire|Belgium, DR Congo, France|English|63|2026|EXP
+bitterxmas|BITTER CHRISTMAS|Pedro Almodóvar|Spain|Spanish|112|2026|CH-S
+goldenage|THE GOLDEN AGE|Bérenger Thouin|France, Italy|French|108|2026|BD
+rahma|RAHMA|Faysal Soysal|Bulgaria, Greece, Italy, Türkiye|Arabic, Kurdish, Turkish|121|2026|ICFT
+trinidad|TRINIDAD|Laura Alvea, José Ortuño|Spain|Spanish, English|115|2025|CH-S
+aliens|WE ARE ALIENS|Kohei Kadowaki|Japan, France|Japanese|117|2026|MAC
+mario|THE WORLD OF MÁRIO… SERIOUSLY FUNNY!|Uday Sridhar Kamat, Savio de Noronha|India|English|47||CC-I
+mundhanai|MUNDHANAI MUDICHU|K. Bhagyaraj|India|Tamil|150||HOM-I
+embers|EMBERS|Sun Aoqian|China|Chinese|114|2026|BRICS
+safeexit|SAFE EXIT|Mohammed Hammad|Egypt|Arabic|112|2026|BRICS
+trek|THE TREK|Meekaaeel Adam|South Africa|English|105|2026|BRICS
+magazine|MAGAZINE|Alexandra Pechman|USA|English|105|2026|CW
+sunrise|SUNRISE: A SONG OF TWO HUMANS|F. W. Murnau|USA|English intertitles|94|1927|RES.CL
+fruitsforest|WE ARE THE FRUITS OF THE FOREST|Rithy Panh|Cambodia, France|Bunong|87|2025|ML
+clearing|THE CLEARING|Sabine Groenewegen|Netherlands, Indonesia|Dutch, Láadan, Indonesian, English|89|2026|ML
+vanishing|VANISHING TRACKS|Hamed Zolfaghari|Iran, France, Norway, South Korea, Qatar|Qashqai, Persian|92|2026|DOC
+abraham|THE DAUGHTERS OF ABRAHAM|Hanaël El Yousfi|France|French, Arabic|92|2026|CW
+toomanybeasts|TOO MANY BEASTS|Sarah Arnold|France|French|95|2026|CW
+salvation|SALVATION|Emin Alper|Türkiye, France, Netherlands, Greece, Sweden, Saudi Arabia|Turkish, Kurdish|120|2026|FFW
+quietapplause|THE QUIET APPLAUSE|Byun Sung-bin|South Korea|Korean|80|2026|CW
+ria|RIA|Arvin Belarmino|Philippines, Netherlands, Saudi Arabia, Japan, Norway|Tagalog|95|2026|EF
+skintown|SKINTOWN|Kieron J. Walsh|Ireland, UK|English|99|2026|CW
+tropical|TROPICAL FRACTALS|Leonardo Pirondi|Portugal, Brazil|Portuguese|72|2026|ML
+coward|COWARD|Lukas Dhont|Belgium, France, Netherlands|French, Dutch, English|120|2026|CW
+djinn|DJINN WEDDING|Ferit Karahan|Türkiye|Turkish|132|2026|CW
+holdonto|HOLD ONTO ME|Myrsini Aristidou|Cyprus, Denmark, Greece, USA|Greek|102|2025|CW
+huntress|THE HUNTRESS|Suzanne Andrews Correa|Mexico, USA|Spanish|92|2026|IC
+rivertrain|THE RIVER TRAIN|Lorenzo Ferro, Lucas A. Vignale|Argentina|Spanish|75|2026|IC
+koodu|KOODU|Joyal Vijay|India|Tamil|127|2026|GALA
+revolutionaries|REVOLUTIONARIES NEVER DIE|Mohanad Yaqubi|Palestine, Belgium, Qatar|French, English, Arabic|81|2026|DOC
+ohhmydog|OHH MY DOG|Amit Rai|India|Hindi|151||IP-FF
+chaloindia|CHALO INDIA WITH ERIC JI – MIZORAM|Rajdeep Choudhury|India|English|48||IP-NF
+paglaghora|PAGLA GHORA|Sekhar Das|India|Bengali|109||IP-FF
+switchoff|SWITCH OFF|Sandeep Francis|India|Malayalam|11||IP-NF
+aadianant|AADI ANANT|Mahesh Limaye|India|Marathi|137||IP-FF
+sarvammaya|SARVAM MAYA|Akhil Sathyan|India|Malayalam|148||IP-FF
+womanunknown|WOMAN UNKNOWN|May el-Toukhy|Denmark, Sweden, Latvia|Danish|124|2026|FFW
+farm|THE FARM|Elif Eda|Türkiye|Turkish|82|2026|ICFT
+atlantic|ATLANTIC RHAPSODY|Kaifeng Zhong|China|Mandarin Chinese|101|2026|BD
+lumet|SIDNEY LUMET’S BIRTHDAY|Raul Geidarov|Russia|Russian|92|2025|FAF,PC-R
+atnight|AT NIGHT|Beatrice Gibson|UK, France|English, French, Bambara, Tibetan, Mandarin|87|2026|EF
+nightborn|NIGHTBORN|Hanna Bergholm|Finland, Lithuania, France, UK|Finnish, English|92|2026|MAC
+badson|THE BAD SON|Jaime Lorente|Spain|Spanish|106|2026|CH-S
+purnata|PURNATA|Shravan Kankonkar|India|Konkani|25||GOAN
+noise|NOISE|Suvidha Torgal Bakhle|India|Konkani|16||GOAN
+daryaa|DARYAA|Kishor Arjun|India|Marathi|25||GOAN
+perfectshot|PERFECT SHOT|Sankalp Sainath Parab|India|Konkani|14||GOAN
+kanal|KANAL|Andrzej Wajda|Poland|Polish|91|1956|AWC
+erratics|ERRATICS|Thomas Woodroffe|Chile, France, Argentina|French, Spanish|92|2026|EXP
+masayume|MASAYUME|Nao Yoshigai|Japan|Japanese|110|2026|DOC
+mudras|MUDRAS. DANCING TO INVISIBLE THREADS|Maria Salgado Gispert|Spain, India|Spanish, English|77|2026|CW
+wildatheart|WILD AT HEART|David Lynch|USA|English|125|1990|RES.CL
+amadeo|AMADEO AND THE HYPOTHETICAL NEW WORLD|Brenda Lígia, Edu Felistoque|Brazil|Portuguese|104|2026|BRICS
+mudhal|MUDHAL MARIYADHAI|Bharathiraja|India|Tamil|160||HOM-I
+bobo|BO BO|Anastasia Kuzina|Russia|Russian|98|2026|BRICS,PC-R
+poultry|POULTRY FARM|Mohammadreza Ardalan|Iran|Persian|97|2026|BRICS
+hijra|HIJRA|Shahad Ameen|Saudi Arabia, Iraq, UK, Egypt|Arabic|114|2025|BRICS
+furies|FURIES|Rami Kodeih|Lebanon, Brazil|Arabic|133|2026|CW
+inch|I GREW AN INCH WHEN MY FATHER DIED|P. R. Monencillo Patindol|Philippines|Cebuano|73|2026|EF
+dust|DUST|Tsai Ming-liang|Taiwan, Spain|Spanish|80|2026|DOC
+goodbye|GOODBYE CRUEL WORLD|Félix de Givry|France, Belgium|French|93|2026|CW
+childrenuntold|CHILDREN UNTOLD|Miwa Nishikawa|Japan|Japanese|150|2026|CW
+roid|ROID|Mejbaur Rahman Sumon|Bangladesh|Bengali|109|2026|EF
+groundfloor|GROUND FLOOR|Gábor Reisz|Hungary, Italy|Hungarian|108|2026|CW
+nuisance|NUISANCE BEAR|Gabriela Osio Vanden, Jack Weisman|USA, Canada, UK|Inuktitut, English|88|2026|FFW
+nowhere|NOWHERE TO LAY MY EYES|Hong Sang-soo|South Korea|Korean|72|2026|FFW
+maddog|THE MAD DOG OF EUROPE|Rubika Shah|France, Germany|English|83|2026|FAF
+variations|VARIATIONS ON A THEME|Jason Jacobs, Devon Delmar|South Africa, Netherlands, Qatar|Afrikaans|65|2026|FFW
+visitation|VISITATION|Volker Schlöndorff|Germany|German|118|2026|IC
+elephants|ELEPHANTS IN THE FOG|Abinash Bikram Shah|Nepal, France, Germany, Brazil, Norway|Nepali, Bhojpuri|103|2026|FFW
+imatter|I MATTER|Alina Șerban|Romania, Germany, Belgium|Romanian, Romani|101|2026|MID-F,EF
+josephine|JOSEPHINE|Beth de Araújo|USA|English|121|2025|FFW
+shiksha|SHIKSHA|Amyth Patkar|India|Marathi|20||IP-NF
+laalo|LAALO – KRISHNA SADA SAHAAYATE|Ankit Bhupatbhai Sakhiya|India|Gujarati|136||IP-FF
+abhal|ABHAL-VRIKSH|Santosh Davakhar|India|Marathi|19||IP-NF
+superhero|THE GREAT GRAND SUPERHERO ALIENS KA AAGMAN|Manish Saini|India|Hindi|112||IP-FF
+win|WIN|Praveen|India|Telugu|30||IP-NF
+pilichanne|PILI CHANNE|Anupama Sharadhi|India|Tulu|108||IP-FF
+baapya|BAAPYA|Samir Tewari|India|Marathi|148||IP-FF
+bapokale|BAPO KALE|Krisha Raul|India|Konkani|24||GOAN
+skybeyond|SKY BEYOND BORDERS – TARANG SHAKTI|Kanika Gautam|India|English|14|2026|GALA
+indiaexp|THE INDIA EXPERIENCE – SEASON 1|Bharatbala Ganapathy|India|English|86|2026|GALA
+padma|PADMA NADIR MAJHI|Goutam Ghose|India|Bengali|145||SP-I
+half|HALF|Samjad|India|Malayalam, Tamil, Telugu, Kannada|110|2026|GALA
+dreamed|THE DREAMED ADVENTURE|Valeska Grisebach|Germany, France, Bulgaria, Austria|Bulgarian|167|2026|FFW
+ourtime|OUR TIME WILL COME|Amartei Armar|Ghana, France|Twi, Ga, Pidgin|104|2026|ICFT
+blacksea|THE BLACK SEA|Aladdin Mostafa|Egypt|Arabic|83|2026|BD
+tago|TAGO|Aleksandr Anisimov|Georgia|Georgian|85|2026|CW
+stateofus|THE STATE OF US|Ollie Gardner, Jake Harvey|UK|English|89|2026|CW
+uchronia|UCHRONIA|Fil Ieropoulos|Greece, Netherlands|English, French, German, Italian, Russian|97|2026|EXP
+sadhimanase|SADHI MANASE|Bhalji Pendharkar|India|Marathi|137||CC-I
+fayadayi|FAYA DAYI|Jessica Beshir|Ethiopia, USA, Qatar|Oromiffa, Harari|120|2021|BRICS
+baab|BAAB|Nayla Al Khaja|UAE|Arabic|97|2026|BRICS
+snowfalling|AND THE SNOW WAS FALLING|Andrei Egorov|Belarus|Russian|80|2026|BRICS
+shumei|SHUMEI – THE LIVING LEGACY OF KABUKI|Takashi Miike|Japan|Japanese|97|2026|DOC
+tobeornot|TO BE OR NOT TO BE|Ernst Lubitsch|USA|English, German|99|1942|RES.CL
+ashes|ASHES AND DIAMONDS|Andrzej Wajda|Poland|Polish|99|1958|AWC
+nunkui|NUNKUI|Verenice Benítez|Ecuador, Chile, Germany|Spanish, Shuar|91|2026|ML
+shame|SHAME AND MONEY|Visar Morina|Germany, Kosovo, Slovenia, Albania, North Macedonia, Belgium|Albanian|129|2026|FFW
+seventeen|17|Kosara Mitic|North Macedonia, Slovenia, Serbia|Macedonian|105|2026|CW
+atonement|ATONEMENT|Reed Van Dyk|USA|English|117|2026|EF
+fruitgathering|FRUIT GATHERING|Aung Phyoe|Myanmar, Czechia, France|Burmese|97|2026|FFW
+fathersroom|IN MY FATHER’S ROOM|Maha Harada|Japan|Japanese|109|2026|IC
+skylark|SKYLARK|Narghiza Dotieva|Kyrgyzstan|Kyrgyz|85|2026|IC
+jimqueen|JIM QUEEN|Nicolas Athané, Marco Nguyen|France|French|85|2026|ANI
+arrested|ARRESTED MEMORY|Sabu|Taiwan, Japan|Mandarin, Taiwanese, Japanese|87|2026|MAC
+mana|MANA SHANKARA VARA PRASAD GARU (PANDAGA KI VASTUNNARU)|Anil Ravipudi|India|Telugu|164||IP-FF
+savegod|SAVE THE GOD|Niraj Kumar Mishra|India|Hindi|17||IP-NF
+krishnavataram|KRISHNAVATARAM|Hardik Gajjar|India|Hindi|150||IP-FF
+amitatal|AMIT ATAL|Hitesh Shankar|India|Hindi|24||IP-NF
+hug|THE HUG OF EMPTINESS|Pradeep Kumar Shetty|India|Kannada|20||IP-NF
+saraswati|THE UNSEEN HOLY RIVER – SARASWATI|Bhasker Vishwanathan|India|Hindi|29||IP-NF
+deool|DEOOL BAND 2|Pravin Vitthal Tarde|India|Marathi|182||IP-FF
+mortal|LIKE ANY OTHER MORTAL|María Molina Peiró|Netherlands, Spain|Spanish, English|93|2026|ML
+fewdays|A FEW DAYS IN THE SUN|Mauro Mueller|Mexico, Dominican Republic, Germany, USA|English, Spanish|85|2026|CW
+fading|A FADING MAN|Welf Reinhart|Germany|German|102|2026|BD
+strawberries|STRAWBERRIES|Laïla Marrakchi|Belgium, France, Morocco, Spain|Arabic, Spanish|101|2026|ICFT
+cid|C.I.D.|Raj Khosla|India|Hindi|146||CC-I
+whyvani|WHY, VANI?|Dhanush Dandu|India|Telugu|138||IP-NH
+bhaiband|BHAI BAND|Manish Saini|India|Gujarati|109|2026|GALA
+ottan|OTTANJAAVALMARAM|Shruthi Sharanyam|India|Malayalam|100||IP-NH
+kabhikabhie|KABHI KABHIE|Yash Chopra|India|Hindi|178||GJ-I
+condor|THE CONDOR DAUGHTER|Álvaro Olmos Torrico|Bolivia, Peru, Uruguay|Quechua, Spanish|109|2025|BRICS
+chowringhee|CHOWRINGHEE|Pinaki Bhushan Mukherjee|India|Bengali|141||CC-I
+y1982|1982|Nguyen Hoang Diep|Vietnam|Vietnamese|90|2026|BRICS
+thulabharam|THULABHARAM|A. Vincent|India|Malayalam|160||CC-I
+baracoa|BARACOA|Luis Ernesto Doñas|Italy, Cuba|Spanish, Italian|104|2025|BRICS
+magicatlas|MAGIC ATLAS|Sun Xun|Singapore|Chinese|85|2026|ANI
+promised|THE PROMISED LAND|Andrzej Wajda|Poland|Polish|179|1974|AWC
+supporting|SUPPORTING ROLE|Ana Urushadze|Georgia, Estonia, Türkiye, Switzerland, USA|Georgian, Armenian|139|2026|FAF
+zumthor|FROM INSIDE OUT: THE ARCHITECTURE OF PETER ZUMTHOR|Wim Wenders|Germany, Switzerland|German, Swiss German, English|114|2026|CW
+albaraneya|AL BARANEYA|Ashgan ElHamus|Belgium, Egypt, Netherlands, Saudi Arabia|Arabic|84|2026|CW
+chronovisor|CHRONOVISOR|Jack Auen, Kevin Walker|USA|English, French, Italian, German|99|2026|EXP
+cherryvirgin|CHERRY AND VIRGIN|Masanao Kawajiri|Japan|Japanese|87|2026|ANI
+farfromtrees|FAR FROM THE TREES|Meritxell Colell Aparicio|Spain, Peru, Italy|Spanish, Quechua, Catalan|120|2026|IC
+afamily|A FAMILY|Mees Peijnenburg|Netherlands, Belgium|Dutch|89|2026|IC
+tuaahesna|TU AAHES NA|Deepak Gawade|India|Marathi|131|2026|GALA
+meltdown|THE MELTDOWN|Manuela Martelli|Chile, USA, Spain, Mexico|Spanish, English, German|108|2026|IC
+kantara|KANTARA: A LEGEND – CHAPTER 1|Rishab Shetty|India|Kannada|169||IC,IP-FF
+ulididdu|ULIDIDDU SAMPIGE MAATRA|Abhishek|India|Kannada|30||IP-NF
+scroll|SCROLL|Kannan S|India|Tamil|128||ICFT,IP-FF
+echoesshelter|ECHOES OF THE LAST SHELTER|Bharat Arora, Rajesh Bhatia|India|Hindi|14||IP-NF
+paro|PARO – THE UNTOLD STORY OF BRIDE SLAVERY|Gajendra Ahire|India|Hindi|110||IC,IP-FF
+kabirsir|KABIR SIR KA AKHRI LESSON|Sarfaraz|India|Hindi|104||ICFT,IP-FF
+woodworm|WOODWORM (ROTO)|Akhil Lotlikar|India|Konkani|22||GOAN
+stillfriend|WILL YOU STILL BE MY FRIEND|Po-Shun Lu|Singapore, Taiwan|English, Mandarin Chinese|100|2026|ICFT
+parisparis|PARIS PARIS|Isabelle Tollenaere|Belgium|English, French, Mandarin Chinese|78|2026|BD
+comewithme|COME WITH ME|João Lameira|Portugal|Portuguese|81|2026|CW
+arivu|ARIVU|Sathyashiva|India|Tamil|130||IP-NH
+bloodcountess|THE BLOOD COUNTESS|Ulrike Ottinger|Austria, Luxembourg, Germany|German, French|119|2026|MAC
+ajayante|AJAYANTE MARANAM: ORU CASE STUDY|Sreehari Haridas|India|Malayalam|72||IP-NH
+cheers|CHEERS!|Anurag Verdekar|India|Konkani|19||GOAN
+mediumpiece|MEDIUM PIECE|Jay Amonkar|India|Marathi|23||GOAN
+chaleur|LA CHALEUR|Stéphane Demoustier|France, Italy, Belgium, Switzerland|French|93|2026|CW
+nowimet|NOW I MET HER|Luxi Xiao|China|Mandarin Chinese|121|2026|GALA
+silver|SILVER|Natalia Koniarz||Spanish|78||MIFF
+underthesnow|UNDER THE SNOW|Nafiseh Zare||Persian|19||MIFF
+mayassong|MAYA’S SONG|Franziska Schönenberger, Jayakrishnan Subramanian||German|13||MIFF
+waai|WAAI|Sainath S. Uskaikar|India|Sindhi, Hindi|13||MIFF
+smallclouds|SMALL CLOUDS|Shubham Sumit|India|Hindi|24||MIFF
+armstrong|ARMSTRONG FROM ANGAALAMMAN TEMPLE STREET|Bunz|India|Hindi|14||MIFF
+seaspeaks|THE SEA SPEAKS HIS NAME|Yosep Anggi Noen|Indonesia|Indonesian|135|2025|BRICS
+diksha|DIKSHA|Arun Kaul|India|Hindi|133||HOM-I
+cord|THE CORD|Darkhan Tulegenov|Kazakhstan|Kazakh, Russian, English|120|2026|BRICS
+waqt|WAQT|Yash Chopra|India|Hindi|179||CC-I
+baga|BAGA: TOMORROW BELONGS TO NO ONE|Ariff Zulkarnain|Malaysia|Malay|94|2025|BRICS
+cherrytown|CHERRY TOWN|Herbert Rappaport|Russia|Russian|91|1962|PC-R
+manofmarble|MAN OF MARBLE|Andrzej Wajda|Poland|Polish|153|1976|AWC
+desica|VITTORIO DE SICA – STAGING LIFE|Francesco Zippel|Italy|Italian, French, English, Russian, Farsi|100|2026|FAF
+serpenti|SERPENTI|Roberto de Paolis Maino|Italy|Italian|88|2026|CW
+hearing|HEARING|Lê Bảo|Singapore, Vietnam, Norway, France, Indonesia, Saudi Arabia, Cambodia, Thailand, Taiwan|Vietnamese|128|2026|IC
+threeweeks|3 WEEKS AFTER|Miroslav Terzić|Serbia, Bulgaria, Italy, Croatia, Luxembourg|Serbian|94|2026|IC
+panchayat|PANCHAYAT (S5 EP1)|Deepak Kumar Mishra|India|Hindi|45|2026|GALA
+shatshat|SHAT-SHAT ATAL|Atul Pandey|India|Hindi|63||IP-NF
+chandoba|CHANDOBA|Nipun Dharmadhikari|India|Marathi|25||IP-NF
+demography|DEMOGRAPHY IS DESTINY|Kamakhya Narayan Singh, Anshuman Shekhar|India|Hindi|40||IP-NF
+kerala2|THE KERALA STORY 2 GOES BEYOND|Kamakhya Narayan Singh|India|Hindi|132||IC,IP-FF
+attappadi|ATTAPPADI|Vijeesh Mani|India|Tamil|31||IP-NF
+birdsonice|BIRDS ON ICE|Sahil Shah|India|Ladakhi|86||BD,IP-FF
+sevmicchar|SEV MICCHAR|Muskan Asthana|India|Hindi|104||ICFT,IP-FF
+mariemad|MARIE MADELEINE|Gessica Généus|Haiti|French, Haitian Creole|104|2026|ICFT
+pratyabartan|PRATYABARTAN|Samarpan Sengupta|India|Bengali|134||IP-BDD
+anesthesia|ANESTHESIA|Jaro Vojtek|Slovakia|Slovak|98|2026|CW
+chennai|CHENNAI LOVE STORY|Ravi Varma Namburi|India|Telugu|179||IP-BDD
+tighi|TIGHI|Jeejivisha Kale|India|Marathi|108||IP-BDD
+echoesvalour|ECHOES OF VALOUR|Indira Dhar|India|Hindi|106|2026|GALA
+hanuman|HANUMAN ANSH|Dr. Vishal Chaturvedi|India|Hindi|150|2025|IP-BDD
+sledge|SLEDGE|Raja Shabir Mohd Khan|India|Kashmiri|76||BD,IP-BDD
+heiljupiter|HEIL JUPITER|Carlos Reygadas|Mexico, Poland|Spanish|150|2026|EXP
+lady|LADY|Olive Nwosu|UK, Nigeria|English|96|2026|BRICS
+serenada|DREAMING OF SERENADA|Katrine Weber|Uganda, Denmark, USA|English, Danish, Luganda|73|2026|BRICS
+cotton|COTTON|Rashid Malikov|Uzbekistan|Uzbek|79|2025|BRICS
+goodtrip|GOOD TRIP|Norris Wong, Wong Hoi|Hong Kong|Cantonese|108|2026|CW
+ninetemples|9 TEMPLES TO HEAVEN|Sompot Chidgasornpongse|Thailand, Singapore, France, Norway, China, Hong Kong, Indonesia, Qatar|Thai|140|2026|BRICS
+trainspotting|TRAINSPOTTING|Danny Boyle|UK|English|94|1996|RES.CL
+bodysnatchers|INVASION OF THE BODY SNATCHERS|Don Siegel|USA|English|80|1956|RES.CL
+afterimage|AFTERIMAGE|Andrzej Wajda|Poland|Polish|98|2016|AWC
+healthcentre|HEALTH CENTRE|Anup Sardesai|India|Konkani|127||GOAN
+azadbharath|AZAD BHARATH|Dr. Roopa Iyer|India|Hindi|119||SP-I
+dhurandhar2|DHURANDHAR: THE REVENGE|Aditya Dhar|India|Hindi|232||SP-I
+natsamrat|NATSAMRAT|Mahesh Manjrekar|India|Marathi|166|2016|OA
+httyd|HOW TO TRAIN YOUR DRAGON (LIVE ACTION)|Dean DeBlois|USA|English|126|2025|OA
+bombilwadi|MUKKAM POST BOMBILWADI|Paresh Mokashi|India|Marathi|140|2025|OA
+wildrobot|THE WILD ROBOT|Chris Sanders|USA|English|101|2024|OA
+mogasum|MOG ASUM|Angelo Agnelo Braganza, Radheshyam Pipalwa|India|Konkani|96|2025|OA
+tanvi|TANVI, THE GREAT|Anupam Kher|India|Hindi|160|2025|OA
+bttf|BACK TO THE FUTURE|Robert Zemeckis|USA|English|116|1985|OA
+`;
+
+const SCHED = `
+0 P1 14:00 fatherland
+0 P2 14:15 fatherland
+0 P3 14:30 fatherland
+0 R1 15:00 fatherland
+0 RB 15:00 fatherland
+1 P1 09:45 lookback
+1 P1 12:15 aqui
+1 P1 17:30 pushpak
+1 P1 19:45 samurai
+1 P2 12:15 becoming+dhurandhar qa
+1 P2 16:45 redcarpet+urum qa
+1 P2 20:30 thaai qa
+1 P3 09:15 maverick
+1 P3 12:00 callmequeen
+1 P3 14:30 placetoheal
+1 P3 17:00 sunspots
+1 P3 19:15 jaripeo
+1 P3 21:15 drag
+1 P4 10:00 congoboy
+1 P4 12:15 ancessao
+1 P4 14:00 newhome
+1 P4 16:30 michael
+1 P4 19:00 shadowsedge
+1 MQ 11:00 lagaan
+1 MQ 16:30 kannappa
+1 MQ 19:30 ramgao+dera
+1 AS 13:00 fortunate
+1 AS 16:00 ulya
+1 AS 19:00 fullphil
+1 SM 13:30 queenatsea
+1 SM 16:30 zejtune
+1 SM 19:30 oasis
+1 R1 11:00 maternal
+1 R1 14:00 dontbelong
+1 R1 17:15 titanic
+1 R2 11:15 chicacheca
+1 R2 16:15 dhurandhar
+1 R3 11:30 diane
+1 R3 14:30 suzhou
+1 R3 17:30 untilday
+1 R4 11:45 drumskin
+1 R4 14:45 smallgods
+1 R4 17:45 nobodys
+1 RB 13:00 billevans
+1 RB 16:00 lightpillar
+1 MM 18:00 waking
+1 MIR 19:00 natsamrat
+1 VAG 19:00 bombilwadi
+1 RBL 19:00 bombilwadi
+2 P1 09:45 everytime
+2 P1 12:30 ramayana
+2 P1 17:45 raygunn
+2 P1 20:30 prayforus
+2 P2 09:30 katharkatha+rubycube qa
+2 P2 12:45 naqsh+banaras qa
+2 P2 16:30 nirmanjali+surjyamukhi qa
+2 P2 20:00 singgeetham qa
+2 P3 09:15 bitterxmas
+2 P3 12:00 goldenage
+2 P3 14:30 rahma
+2 P3 17:15 trinidad
+2 P3 20:00 aliens
+2 P4 10:00 kashmirkikali
+2 P4 13:30 umesh
+2 P4 15:45 shakuntala
+2 P4 16:30 baghuni
+2 P4 18:40 carlossuara
+2 P4 20:30 joyboy
+2 MQ 10:30 mario
+2 MQ 12:00 mundhanai
+2 MQ 15:15 embers
+2 MQ 18:00 safeexit
+2 MQ 20:30 trek
+2 AS 13:00 magazine
+2 AS 16:00 sunrise
+2 AS 19:00 fruitsforest
+2 SM 13:30 clearing
+2 SM 16:30 vanishing
+2 SM 19:30 abraham
+2 R1 10:00 toomanybeasts
+2 R1 13:00 aqui
+2 R1 19:00 salvation
+2 R2 10:15 ramgao+dera
+2 R2 13:15 becoming+redcarpet
+2 R2 16:15 kannappa
+2 R2 19:15 urum
+2 R3 10:30 quietapplause
+2 R3 13:30 ria
+2 R3 16:30 newhome
+2 R3 19:30 callmequeen
+2 R4 10:45 skintown
+2 R4 13:45 tropical
+2 R4 16:45 coward
+2 R4 19:45 djinn
+2 RB 10:00 holdonto
+2 RB 14:00 rubycube
+2 RB 16:00 sunspots
+2 MM 18:00 thaai
+2 MIR 19:00 httyd
+2 VAG 19:00 wildrobot
+2 RBL 19:00 mogasum
+3 P1 09:45 maternal
+3 P1 12:15 huntress
+3 P1 15:30 rivertrain
+3 P1 17:30 koodu
+3 P1 20:30 revolutionaries
+3 P2 09:30 ohhmydog qa
+3 P2 12:45 chaloindia+paglaghora qa
+3 P2 16:30 switchoff+aadianant qa
+3 P2 20:00 sarvammaya qa
+3 P3 09:15 womanunknown
+3 P3 12:00 farm
+3 P3 14:00 atlantic
+3 P3 16:30 lumet
+3 P3 18:45 atnight
+3 P3 21:00 nightborn
+3 P4 10:00 badson
+3 P4 12:45 purnata
+3 P4 14:00 noise
+3 P4 15:00 daryaa
+3 P4 16:00 perfectshot
+3 P4 17:00 kanal
+3 P4 19:15 erratics
+3 MQ 09:00 amadeo
+3 MQ 11:30 mudhal
+3 MQ 15:00 bobo
+3 MQ 17:30 poultry
+3 MQ 20:00 hijra
+3 AS 13:00 masayume
+3 AS 16:00 mudras
+3 AS 19:00 wildatheart
+3 SM 13:30 furies
+3 SM 16:30 inch
+3 SM 19:30 dust
+3 R1 10:00 goodbye
+3 R1 13:00 congoboy
+3 R1 16:00 childrenuntold
+3 R1 19:00 roid
+3 R2 10:15 rubycube
+3 R2 13:15 banaras
+3 R2 16:15 surjyamukhi
+3 R2 19:15 singgeetham
+3 R3 10:30 groundfloor
+3 R3 13:30 nuisance
+3 R3 16:30 goldenage
+3 R3 19:30 rahma
+3 R4 10:45 trinidad
+3 R4 13:45 queenatsea
+3 R4 16:45 billevans
+3 R4 19:45 nowhere
+3 RB 10:00 kashmirkikali
+3 RB 13:30 surjyamukhi+katharkatha
+3 RB 16:30 newhome
+3 MM 18:00 maddog
+3 MIR 19:00 tanvi
+3 VAG 19:00 httyd
+3 RBL 19:00 httyd
+4 P1 09:45 variations
+4 P1 11:30 visitation
+4 P1 14:15 elephants
+4 P1 17:00 imatter
+4 P1 19:30 josephine
+4 P2 09:30 shiksha+laalo qa
+4 P2 12:45 abhal+superhero qa
+4 P2 16:30 win+pilichanne qa
+4 P2 20:00 baapya qa
+4 P3 09:15 titanic
+4 P3 12:00 ourtime
+4 P3 14:30 blacksea
+4 P3 16:30 tago
+4 P3 18:45 stateofus
+4 P3 20:45 uchronia
+4 P4 11:00 bapokale
+4 P4 12:00 skybeyond
+4 P4 12:30 indiaexp
+4 P4 14:45 padma
+4 P4 18:00 half
+4 P4 20:30 dreamed
+4 MQ 13:30 sadhimanase
+4 MQ 16:30 fayadayi
+4 MQ 19:15 baab
+4 MQ 21:30 snowfalling
+4 AS 13:00 shumei
+4 AS 16:00 tobeornot
+4 AS 19:00 ashes
+4 SM 13:30 nunkui
+4 SM 16:30 revolutionaries
+4 SM 19:30 suzhou
+4 R1 10:00 shame
+4 R1 13:00 rivertrain
+4 R1 17:00 imatter
+4 R1 19:30 prayforus
+4 R2 10:15 ohhmydog
+4 R2 13:15 paglaghora
+4 R2 16:15 aadianant
+4 R2 19:15 sarvammaya
+4 R3 10:30 abraham
+4 R3 13:30 seventeen
+4 R3 16:30 atlantic
+4 R3 19:30 farm
+4 R4 10:45 atonement
+4 R4 13:45 dust
+4 R4 16:45 raygunn
+4 R4 19:45 oasis
+4 RB 10:00 singgeetham+switchoff
+4 RB 13:00 banaras
+4 RB 16:00 goldenage
+4 MM 18:00 naqsh+nirmanjali+chaloindia
+4 MIR 19:00 bttf
+4 VAG 19:00 tanvi
+4 RBL 19:00 bombilwadi
+5 P1 09:30 fruitgathering
+5 P1 11:45 fathersroom
+5 P1 14:15 skylark
+5 P1 16:30 nunkui
+5 P1 18:45 jimqueen
+5 P1 21:00 arrested
+5 P2 09:30 mana qa
+5 P2 12:45 savegod+krishnavataram qa
+5 P2 16:30 amitatal+hug+saraswati qa
+5 P2 20:00 deool qa
+5 P3 09:15 mortal
+5 P3 11:30 fewdays
+5 P3 13:45 fading
+5 P3 16:15 strawberries
+5 P3 18:45 cid
+5 P4 10:00 whyvani qa
+5 P4 13:00 bhaiband
+5 P4 15:30 ottan qa
+5 P4 18:00 waking
+5 P4 20:00 kabhikabhie
+5 MQ 09:00 condor
+5 MQ 11:30 chowringhee
+5 MQ 14:30 y1982
+5 MQ 17:00 thulabharam
+5 MQ 20:30 baracoa
+5 AS 13:00 tropical
+5 AS 16:00 magicatlas
+5 AS 19:00 promised
+5 SM 13:30 drumskin
+5 SM 16:30 supporting
+5 SM 19:30 zumthor
+5 R1 10:00 albaraneya
+5 R1 13:00 zejtune
+5 R1 16:00 chronovisor
+5 R1 19:00 visitation
+5 R2 10:15 laalo
+5 R2 13:15 superhero
+5 R2 16:15 pilichanne
+5 R2 19:15 baapya
+5 R3 10:30 blacksea
+5 R3 13:30 dreamed
+5 R3 19:30 ourtime
+5 R4 10:45 diane
+5 R4 13:45 stateofus
+5 R4 16:45 lightpillar
+5 R4 19:45 badson
+5 RB 10:00 mundhanai
+5 RB 13:00 sadhimanase
+5 RB 16:00 blacksea
+5 MM 18:00 cherryvirgin
+5 MIR 19:00 mogasum
+5 VAG 19:00 bttf
+5 RBL 19:00 tanvi
+6 P1 09:45 coward
+6 P1 12:30 farfromtrees
+6 P1 15:15 afamily
+6 P1 17:30 tuaahesna
+6 P1 20:15 meltdown
+6 P2 09:30 kantara qa
+6 P2 12:45 ulididdu+scroll qa
+6 P2 16:30 echoesshelter+paro qa
+6 P2 20:00 kabirsir qa
+6 P3 11:00 woodworm
+6 P3 12:15 stillfriend
+6 P3 14:45 parisparis
+6 P3 16:45 comewithme
+6 P3 18:45 arivu qa
+6 P3 21:30 bloodcountess
+6 P4 10:00 ajayante qa
+6 P4 12:00 cheers
+6 P4 13:00 mediumpiece
+6 P4 14:15 chaleur
+6 P4 16:30 nowimet
+6 P4 19:30 silver+underthesnow+mayassong+waai+smallclouds+armstrong qa
+6 MQ 09:00 seaspeaks
+6 MQ 12:00 diksha
+6 MQ 15:00 cord
+6 MQ 17:45 waqt
+6 MQ 21:30 baga
+6 AS 13:00 nuisance
+6 AS 16:00 nobodys
+6 AS 19:00 maverick
+6 SM 13:30 cherrytown
+6 SM 16:30 lumet
+6 SM 19:30 uchronia
+6 R1 10:00 fortunate
+6 R1 13:00 fathersroom
+6 R1 16:00 skylark
+6 R1 19:00 afamily
+6 R2 10:15 mana
+6 R2 13:30 krishnavataram
+6 R2 16:30 amitatal+hug+saraswati
+6 R2 19:15 deool
+6 R3 10:30 manofmarble
+6 R3 13:30 fading
+6 R3 16:30 huntress
+6 R3 19:30 strawberries
+6 R4 10:45 desica
+6 R4 13:45 untilday
+6 R4 16:45 cherryvirgin
+6 R4 19:45 furies
+6 RB 10:00 kabhikabhie
+6 RB 16:00 fading
+6 MM 18:00 mudhal
+6 MIR 19:00 wildrobot
+6 VAG 19:00 mogasum
+6 RBL 19:00 bttf
+7 P1 09:45 serpenti
+7 P1 12:00 hearing
+7 P1 15:00 threeweeks
+7 P1 17:30 panchayat
+7 P1 19:15 dontbelong
+7 P2 09:30 shatshat+chandoba qa
+7 P2 12:45 demography+kerala2 qa
+7 P2 16:30 attappadi+birdsonice qa
+7 P2 20:00 sevmicchar qa
+7 P3 09:15 nowhere
+7 P3 11:30 mariemad
+7 P3 14:30 pratyabartan qa
+7 P3 18:00 anesthesia
+7 P3 20:15 chennai qa
+7 P4 10:00 tighi qa
+7 P4 12:45 echoesvalour
+7 P4 15:15 hanuman qa
+7 P4 18:30 sledge qa
+7 P4 20:30 heiljupiter
+7 MQ 09:00 lady
+7 MQ 11:30 serenada
+7 MQ 13:30 cotton
+7 MQ 15:30 goodtrip
+7 MQ 18:00 ninetemples
+7 AS 13:00 trainspotting
+7 AS 16:00 comewithme
+7 AS 19:00 bodysnatchers
+7 SM 13:30 roid
+7 SM 16:30 salvation
+7 SM 19:30 childrenuntold
+7 R1 10:00 inch
+7 R1 13:00 farfromtrees
+7 R1 16:00 meltdown
+7 R1 19:00 threeweeks
+7 R2 10:15 kantara
+7 R2 13:15 scroll
+7 R2 16:15 paro
+7 R2 19:15 kabirsir
+7 R3 10:30 stateofus
+7 R3 13:30 parisparis
+7 R3 16:30 hearing
+7 R3 19:30 stillfriend
+7 R4 10:45 afterimage
+7 R4 13:45 tago
+7 R4 16:45 mariemad
+7 R4 19:45 zumthor
+7 RB 10:00 diksha
+7 RB 13:00 parisparis
+7 RB 16:00 waqt
+7 MM 18:00 fewdays
+7 MIR 19:00 bombilwadi
+7 VAG 19:00 wildrobot
+7 RBL 19:00 hanuman
+8 P4 09:15 azadbharath
+8 P3 11:00 healthcentre
+8 P4 12:30 dhurandhar2
+8 P1 14:00 strangers
+8 P2 14:15 strangers
+8 P3 14:30 strangers
+8 R1 15:00 strangers
+8 RB 15:00 strangers
+`;
+
+const TALKS = [
+ [1,'11:30','13:00','In conversation','The Moral Universe of Parallel Cinema: 50 Years of Girish Kasaravalli','Girish Kasaravalli','Naman Ramachandran'],
+ [1,'14:30','16:00','In conversation','From Witness to Change: The Social Responsibility of Documentary Cinema','Julie Bertuccelli','Haobam Paban Kumar'],
+ [2,'11:30','13:00','Session','Session 3 (details on the festival website or app)','',''],
+ [2,'14:30','16:30','Round table','The Unteachable Frame: Can Cinema Be Taught or Must It Be Discovered?','Dhiraj Singh, Santosh Ajmera, Anupam Kher, Amala Akkineni, Artur Zaborski, Manoj Paramahamsa','Vikramjit Roy'],
+ [3,'11:30','13:00','Panel','Goa in Cinema','Abhishek Pathak, Marianne Borgo, Rajendra Talak','Sachin Chatte'],
+ [3,'14:30','16:00','In conversation','The Epic Genres: Mythologies, Superheroes & New Worlds','Ayan Mukerji, Basil Joseph','Puja Talwar'],
+ [4,'11:30','13:00','Panel','Her Lens, Her Legacy, Her Liberty: Women Shaping World Cinema','Narghiza Dotieva, Alina Șerban, Suzanne Andrews Correa','Abhishek Jain'],
+ [4,'14:30','16:00','Masterclass','The Thin Borders Between Reality and Fiction','Bogdan Mureșanu',''],
+ [5,'11:30','13:00','Masterclass','Lata Mangeshkar Talk: The Voice that Echoes Forever (in memory of Asha Bhosle & S. Janaki)','K. S. Chithra','Suhasini Maniratnam'],
+ [5,'14:30','16:00','Masterclass','Words Across Borders: Subtitling Across Cultures','Rekhs',''],
+ [6,'11:30','13:00','Masterclass','The Casting Magic: Auditions Unplugged','Mukesh Chhabra',''],
+ [6,'14:30','16:00','Masterclass','Decoding the Academy Awards','Natalie Wade',''],
+ [7,'11:30','13:00','Panel','The Legendary 25’s','Farhan Akhtar, Ashutosh Gowariker, Madhur Bhandarkar','Khushboo Sundar'],
+ [7,'14:30','16:00','Interview','“What if the Villain is Right?” The Unconventional Filmmaker Karthik Subbaraj','Karthik Subbaraj','Sudhir Srinivasan'],
+];
+
+const EVENTS = [
+ [0,'ST','17:00',180,'Opening Ceremony','Festival opens. Doors from 5 PM.'],
+ [1,'P2','11:30',45,'Indian Panorama inauguration','Jury felicitation (20 jury members). Screenings start 12:15.'],
+ [8,'ST','17:00',180,'Closing Ceremony','Awards and festival close. From 5 PM.'],
+];
+/* People: short profiles for well-documented directors and speakers. Everyone else gets look-up links. */
+const PEOPLE = {
+ 'Paweł Pawlikowski':{r:'Polish-British director',b:'His Ida won the Oscar for Best International Feature; Cold War won him Best Director at Cannes.',w:[['Last Resort',2000],['My Summer of Love',2004],['Ida',2013],['Cold War',2018]]},
+ 'Anthony Chen':{r:'Singaporean director',b:'His debut Ilo Ilo won the Caméra d’Or at Cannes.',w:[['Ilo Ilo',2013],['Wet Season',2019],['The Breaking Ice',2023]]},
+ 'Hirokazu Koreeda':{r:'Japanese director',b:'Known for tender family dramas; Shoplifters won the Palme d’Or.',w:[['After Life',1998],['Nobody Knows',2004],['Like Father, Like Son',2013],['Shoplifters',2018],['Monster',2023]]},
+ 'Kiyoshi Kurosawa':{r:'Japanese director',b:'A master of unsettling genre cinema; Wife of a Spy won the Silver Lion at Venice.',w:[['Cure',1997],['Pulse',2001],['Tokyo Sonata',2008],['Wife of a Spy',2020],['Cloud',2024]]},
+ 'Sudip Sharma':{r:'Indian writer and showrunner',b:'Creator of the series Paatal Lok and Kohrra; co-wrote Udta Punjab.',w:[['NH10 (writer)',2015],['Udta Punjab (co-writer)',2016],['Paatal Lok',2020],['Kohrra',2023]]},
+ 'Aditya Dhar':{r:'Indian director',b:'Broke through with the military drama Uri, which won him the National Award for Best Direction.',w:[['Uri: The Surgical Strike',2019]]},
+ 'Leena Yadav':{r:'Indian director',w:[['Shabd',2005],['Parched',2015],['Rajma Chawal',2018]]},
+ 'Emily Atef':{r:'German-French director',w:[['3 Days in Quiberon',2018],['Someday We’ll Tell Each Other Everything',2023]]},
+ 'Cédric Kahn':{r:'French director',w:[['Red Lights',2004],['The Prayer',2018],['The Goldman Case',2023]]},
+ 'Ashutosh Gowariker':{r:'Indian director',b:'Lagaan was nominated for the Oscar for Best Foreign Language Film.',w:[['Lagaan',2001],['Swades',2004],['Jodhaa Akbar',2008]]},
+ 'Bapu':{r:'Telugu director and artist',b:'Celebrated for mythologicals and his distinctive illustration style.',w:[['Sampoorna Ramayanam',1972],['Mutyala Muggu',1975],['Bhakta Kannappa',1976]]},
+ 'Quentin Dupieux':{r:'French director and musician (Mr. Oizo)',b:'Makes short, absurdist comedies at a rapid clip.',w:[['Rubber',2010],['Deerskin',2019],['Smoking Causes Coughing',2022],['Yannick',2023]]},
+ 'Lance Hammer':{r:'American director',w:[['Ballast',2008]]},
+ 'Florin Şerban':{r:'Romanian director',b:'His debut won the Grand Jury Silver Bear at Berlin.',w:[['If I Want to Whistle, I Whistle',2010]]},
+ 'Denis Côté':{r:'Canadian director',w:[['Bestiaire',2012],['Vic + Flo Saw a Bear',2013]]},
+ 'Grant Gee':{r:'British director',b:'Known for music documentaries and essay films.',w:[['Meeting People Is Easy',1998],['Joy Division',2007],['Patience (After Sebald)',2012]]},
+ 'Alex Camilleri':{r:'Maltese-American director',w:[['Luzzu',2021]]},
+ 'Valentina Maurel':{r:'Costa Rican director',w:[['I Have Electric Dreams',2022]]},
+ 'Sandra Wollner':{r:'Austrian director',w:[['The Trouble with Being Born',2020]]},
+ 'Bharatbala Ganapathy':{r:'Indian director',b:'Made the iconic Vande Mataram music video with A.R. Rahman. Two of his films screen at IFFI this year.',w:[['Vande Mataram (music video)',1997],['Hari Om',2004],['Maryan',2013]]},
+ 'Singeetham Srinivasa Rao':{r:'Indian director',b:'Made the dialogue-free classic Pushpaka Vimana and the time-travel film Aditya 369.',w:[['Pushpaka Vimana',1987],['Michael Madana Kama Rajan',1990],['Aditya 369',1991]]},
+ 'P. Sheshadri':{r:'Kannada director',b:'A multiple National Award winner.',w:[['Munnudi',2000],['Atithi',2002],['Beru',2005]]},
+ 'Nitesh Tiwari':{r:'Indian director',w:[['Dangal',2016],['Chhichhore',2019],['Bawaal',2023]]},
+ 'Brad Bird':{r:'American director',b:'Two-time Oscar winner for animation at Pixar.',w:[['The Iron Giant',1999],['The Incredibles',2004],['Ratatouille',2007],['Mission: Impossible – Ghost Protocol',2011]]},
+ 'Daniel Monzón':{r:'Spanish director',w:[['Cell 211',2009],['El Niño',2014]]},
+ 'Shakti Samanta':{r:'Indian director (1926–2009)',b:'Shaped the romantic Hindi musical of the 1960s and 70s.',w:[['Kashmir Ki Kali',1964],['Aradhana',1969],['Kati Patang',1970],['Amar Prem',1972]]},
+ 'Pedro Almodóvar':{r:'Spanish director',b:'Spain’s best-known auteur; won Oscars for All About My Mother and Talk to Her (screenplay).',w:[['All About My Mother',1999],['Talk to Her',2002],['Volver',2006],['Pain and Glory',2019],['The Room Next Door',2024]]},
+ 'K. Bhagyaraj':{r:'Tamil actor, writer and director',w:[['Andha 7 Naatkal',1981],['Mundhanai Mudichu',1983],['Chinna Veedu',1985]]},
+ 'F. W. Murnau':{r:'German director (1888–1931)',b:'A giant of silent cinema; Sunrise won awards at the very first Academy Awards.',w:[['Nosferatu',1922],['The Last Laugh',1924],['Faust',1926],['Tabu',1931]]},
+ 'Rithy Panh':{r:'Cambodian-French director',b:'Documents the legacy of the Khmer Rouge; The Missing Picture was Oscar-nominated.',w:[['S-21: The Khmer Rouge Killing Machine',2003],['The Missing Picture',2013]]},
+ 'Lukas Dhont':{r:'Belgian director',b:'Close won the Grand Prix at Cannes.',w:[['Girl',2018],['Close',2022]]},
+ 'Ferit Karahan':{r:'Turkish director',w:[['Brother’s Keeper',2021]]},
+ 'Emin Alper':{r:'Turkish director',w:[['Beyond the Hill',2012],['Frenzy',2015],['Burning Days',2022]]},
+ 'Hong Sang-soo':{r:'South Korean director',b:'Makes intimate, talk-driven films, often several a year.',w:[['Right Now, Wrong Then',2015],['The Woman Who Ran',2020],['The Novelist’s Film',2022],['A Traveler’s Needs',2024]]},
+ 'Andrzej Wajda':{r:'Polish director (1926–2016)',b:'Poland’s most celebrated filmmaker; received an honorary Oscar in 2000. This year’s centenary tribute screens five of his films.',w:[['A Generation',1955],['Kanal',1956],['Ashes and Diamonds',1958],['Man of Marble',1976],['Man of Iron',1981]]},
+ 'David Lynch':{r:'American director (1946–2025)',b:'Wild at Heart won the Palme d’Or.',w:[['Eraserhead',1977],['The Elephant Man',1980],['Blue Velvet',1986],['Twin Peaks',1990],['Mulholland Drive',2001]]},
+ 'Bharathiraja':{r:'Tamil director',b:'Took Tamil cinema out of the studio and into the village.',w:[['16 Vayathinile',1977],['Alaigal Oivathillai',1981],['Mudhal Mariyadhai',1985],['Vedham Pudhithu',1987]]},
+ 'Tsai Ming-liang':{r:'Taiwanese director',w:[['Vive L’Amour',1994],['The Wayward Cloud',2005],['Stray Dogs',2013],['Days',2020]]},
+ 'Miwa Nishikawa':{r:'Japanese director',w:[['Dear Doctor',2009],['The Long Excuse',2016],['Under the Open Sky',2020]]},
+ 'Gábor Reisz':{r:'Hungarian director',w:[['For Some Inexplicable Reason',2014],['Explanation for Everything',2023]]},
+ 'Volker Schlöndorff':{r:'German director',b:'The Tin Drum won both the Palme d’Or and the Oscar.',w:[['Young Törless',1966],['The Lost Honour of Katharina Blum',1975],['The Tin Drum',1979]]},
+ 'Takashi Miike':{r:'Japanese director',b:'One of the most prolific directors working, across every genre.',w:[['Audition',1999],['Ichi the Killer',2001],['13 Assassins',2010]]},
+ 'Ernst Lubitsch':{r:'German-American director (1892–1947)',b:'Master of sophisticated comedy, the famous “Lubitsch touch”.',w:[['Trouble in Paradise',1932],['Ninotchka',1939],['The Shop Around the Corner',1940]]},
+ 'Valeska Grisebach':{r:'German director',w:[['Longing',2006],['Western',2017]]},
+ 'Goutam Ghose':{r:'Bengali director',w:[['Paar',1984],['Antarjali Jatra',1987],['Padma Nadir Majhi',1993]]},
+ 'Visar Morina':{r:'Kosovar-German director',w:[['Babai',2015],['Exile',2020]]},
+ 'Sabu':{r:'Japanese director',w:[['Postman Blues',1997],['Monday',2000],['Mr. Long',2017]]},
+ 'Anil Ravipudi':{r:'Telugu director',w:[['F2: Fun and Frustration',2019],['Sarileru Neekevvaru',2020],['Sankranthiki Vasthunam',2025]]},
+ 'Yash Chopra':{r:'Indian director and producer (1932–2012)',b:'Founder of Yash Raj Films. Two of his films screen at IFFI this year.',w:[['Waqt',1965],['Deewaar',1975],['Kabhi Kabhie',1976],['Chandni',1989],['Veer-Zaara',2004]]},
+ 'Raj Khosla':{r:'Indian director (1925–1991)',w:[['C.I.D.',1956],['Woh Kaun Thi?',1964],['Mera Gaon Mera Desh',1971]]},
+ 'A. Vincent':{r:'Malayalam director and cinematographer',w:[['Bhargavi Nilayam',1964],['Murappennu',1965],['Thulabharam',1968]]},
+ 'Bhalji Pendharkar':{r:'Marathi filmmaker (1897–1994)',b:'A pioneer of Marathi cinema and Dadasaheb Phalke Award recipient.'},
+ 'Wim Wenders':{r:'German director',b:'Two of his films screen here as one; known equally for fiction and documentaries.',w:[['Paris, Texas',1984],['Wings of Desire',1987],['Buena Vista Social Club',1999],['Pina',2011],['Perfect Days',2023]]},
+ 'Rishab Shetty':{r:'Kannada actor and director',b:'Won the National Award for Best Actor for Kantara.',w:[['Kirik Party',2016],['Kantara',2022]]},
+ 'Ulrike Ottinger':{r:'German director',w:[['Ticket of No Return',1979],['Johanna d’Arc of Mongolia',1989]]},
+ 'Stéphane Demoustier':{r:'French director',w:[['The Girl with a Bracelet',2019]]},
+ 'Carlos Reygadas':{r:'Mexican director',b:'Won Best Director at Cannes for Post Tenebras Lux.',w:[['Japón',2002],['Silent Light',2007],['Post Tenebras Lux',2012],['Our Time',2018]]},
+ 'Danny Boyle':{r:'British director',b:'Won the Oscar for Slumdog Millionaire.',w:[['Shallow Grave',1994],['28 Days Later',2002],['Slumdog Millionaire',2008],['127 Hours',2010]]},
+ 'Don Siegel':{r:'American director (1912–1991)',w:[['The Killers',1964],['Dirty Harry',1971],['Escape from Alcatraz',1979]]},
+ 'Mahesh Manjrekar':{r:'Indian actor and director',w:[['Vaastav',1999],['Astitva',2000],['Natsamrat',2016]]},
+ 'Dean DeBlois':{r:'Canadian director',b:'Co-directed the animated originals before remaking his own film in live action.',w:[['Lilo & Stitch',2002],['How to Train Your Dragon',2010],['How to Train Your Dragon 2',2014]]},
+ 'Chris Sanders':{r:'American animator and director',w:[['Lilo & Stitch',2002],['How to Train Your Dragon',2010],['The Croods',2013]]},
+ 'Robert Zemeckis':{r:'American director',b:'Won the Oscar for Forrest Gump.',w:[['Who Framed Roger Rabbit',1988],['Forrest Gump',1994],['Cast Away',2000]]},
+ 'Anupam Kher':{r:'Actor, director and teacher',b:'Veteran of more than 500 films and former chairman of FTII. Directed Tanvi, The Great, which screens open-air.',w:[['Saaransh (actor)',1984],['Om Jai Jagadish (director)',2002],['A Wednesday! (actor)',2008]]},
+ 'Paresh Mokashi':{r:'Marathi director',w:[['Harishchandrachi Factory',2009],['Elizabeth Ekadashi',2014]]},
+ 'Hanna Bergholm':{r:'Finnish director',w:[['Hatching',2022]]},
+ 'Jaime Lorente':{r:'Spanish actor turned director',b:'Best known as an actor in Money Heist and Elite.'},
+ 'Amit Rai':{r:'Indian director',w:[['Road to Sangam',2010],['OMG 2',2023]]},
+ 'Pravin Vitthal Tarde':{r:'Marathi actor and director',w:[['Mulshi Pattern',2018],['Dharmaveer',2022]]},
+ 'Manuela Martelli':{r:'Chilean actor and director',w:[['Chile ’76',2022]]},
+ 'Gessica Généus':{r:'Haitian director and actor',w:[['Freda',2021]]},
+ 'Laïla Marrakchi':{r:'Moroccan director',w:[['Marock',2005],['Rock the Casbah',2013]]},
+ 'Rubika Shah':{r:'British director',w:[['White Riot',2019]]},
+ 'Barnaby Thompson':{r:'British producer and director',w:[['St Trinian’s (co-director)',2007]]},
+ 'Mohanad Yaqubi':{r:'Palestinian filmmaker and producer',w:[['Off Frame AKA Revolution Until Victory',2016]]},
+ 'Shahad Ameen':{r:'Saudi director',w:[['Scales',2019]]},
+ 'Beth de Araújo':{r:'American director',w:[['Soft & Quiet',2022]]},
+ 'May el-Toukhy':{r:'Danish director',w:[['Queen of Hearts',2019]]},
+ 'Ana Urushadze':{r:'Georgian director',w:[['Scary Mother',2017]]},
+ 'Miroslav Terzić':{r:'Serbian director',w:[['Stitches',2019]]},
+ 'Deepak Kumar Mishra':{r:'Indian director',b:'Has directed TVF’s Panchayat since its first season.',w:[['Panchayat',2020]]},
+ 'Norris Wong':{r:'Hong Kong director',w:[['My Prince Edward',2019]]},
+ 'Nguyen Hoang Diep':{r:'Vietnamese director',w:[['Flapping in the Middle of Nowhere',2014]]},
+ 'Mejbaur Rahman Sumon':{r:'Bangladeshi director',w:[['Hawa',2022]]},
+ 'Reed Van Dyk':{r:'American director',b:'His short DeKalb Elementary was Oscar-nominated.',w:[['DeKalb Elementary',2017]]},
+ 'Rafiki Fariala':{r:'Central African director',w:[['We, Students!',2022]]},
+ 'Nipun Dharmadhikari':{r:'Marathi director',w:[['Baapjanma',2017],['Me Vasantrao',2022]]},
+ 'Abhishek Pathak':{r:'Indian director and producer',w:[['Drishyam 2',2022]]},
+ 'Ayan Mukerji':{r:'Indian director',w:[['Wake Up Sid',2009],['Yeh Jawaani Hai Deewani',2013],['Brahmastra: Part One',2022],['War 2',2025]]},
+ 'Basil Joseph':{r:'Malayalam director and actor',w:[['Godha',2017],['Minnal Murali',2021],['Jaya Jaya Jaya Jaya Hey (actor)',2022]]},
+ 'Girish Kasaravalli':{r:'Kannada filmmaker',b:'A defining figure of Indian parallel cinema with a record run of National Awards. This session marks 50 years of his work.',w:[['Ghatashraddha',1977],['Tabarana Kathe',1986],['Thaayi Saheba',1997],['Dweepa',2002]]},
+ 'Naman Ramachandran':{r:'Film journalist and author',b:'Writes on Indian and Asian cinema for international trade press.'},
+ 'Julie Bertuccelli':{r:'French director',b:'Works across documentary and fiction.',w:[['Since Otar Left',2003],['The Tree',2010]]},
+ 'Haobam Paban Kumar':{r:'Manipuri filmmaker',w:[['AFSPA 1958',2006],['Loktak Lairembee',2016]]},
+ 'Amala Akkineni':{r:'Actor and animal-welfare activist',b:'Starred in Singeetham Srinivasa Rao’s Pushpaka Vimana, whose director also has a film at IFFI this year.',w:[['Pushpaka Vimana',1987]]},
+ 'Manoj Paramahamsa':{r:'Cinematographer',w:[['Vinnaithaandi Varuvaayaa',2010],['Beast',2022]]},
+ 'Abhishek Jain':{r:'Gujarati director',w:[['Kevi Rite Jaish',2012],['Bey Yaar',2014]]},
+ 'Bogdan Mureșanu':{r:'Romanian director',w:[['The New Year That Never Came',2024]]},
+ 'K. S. Chithra':{r:'Playback singer',b:'One of India’s most-awarded voices, with multiple National Awards and the Padma Bhushan.'},
+ 'Suhasini Maniratnam':{r:'Actor, director and writer',w:[['Indira (director)',1995]]},
+ 'Rekhs':{r:'Subtitler',b:'Known for English subtitles on a large body of Tamil and other Indian films.'},
+ 'Mukesh Chhabra':{r:'Casting director',b:'Cast films including Gangs of Wasseypur and Dangal; directed Dil Bechara.',w:[['Dil Bechara (director)',2020]]},
+ 'Farhan Akhtar':{r:'Director, actor and producer',w:[['Dil Chahta Hai',2001],['Lakshya',2004],['Don',2006],['Bhaag Milkha Bhaag (actor)',2013]]},
+ 'Madhur Bhandarkar':{r:'Indian director',w:[['Chandni Bar',2001],['Page 3',2005],['Fashion',2008]]},
+ 'Karthik Subbaraj':{r:'Tamil director',w:[['Pizza',2012],['Jigarthanda',2014],['Petta',2019],['Jigarthanda DoubleX',2023]]},
+ 'Sudhir Srinivasan':{r:'Film critic'},
+ 'Sachin Chatte':{r:'Goan film critic'},
+ 'Puja Talwar':{r:'Film journalist'},
+};
+/* ---------- reference data ---------- */
+const DAYS = [
+ {n:20,w:'Fri',tag:'Opening'},{n:21,w:'Sat'},{n:22,w:'Sun'},{n:23,w:'Mon'},{n:24,w:'Tue'},
+ {n:25,w:'Wed'},{n:26,w:'Thu'},{n:27,w:'Fri'},{n:28,w:'Sat',tag:'Closing'}];
+
+const AREAS = {
+ panjim:{name:'Panjim'}, porvorim:{name:'Porvorim'}, margao:{name:'Margao'},
+ ponda:{name:'Ponda'}, north:{name:'Vagator'}};
+
+const VENUES = {
+ P1:{name:'INOX Panjim', sub:'Audi 1', area:'panjim', q:'INOX Panjim Old GMC Building Panaji'},
+ P2:{name:'INOX Panjim', sub:'Audi 2', area:'panjim', q:'INOX Panjim Old GMC Building Panaji'},
+ P3:{name:'INOX Panjim', sub:'Audi 3', area:'panjim', q:'INOX Panjim Old GMC Building Panaji'},
+ P4:{name:'INOX Panjim', sub:'Audi 4', area:'panjim', q:'INOX Panjim Old GMC Building Panaji'},
+ MQ:{name:'Maquinez Palace', sub:'Audi 1', area:'panjim', q:'Maquinez Palace Panaji'},
+ AS:{name:'Ashok', sub:'Samrat Ashok Theatre', area:'panjim', q:'Samrat Ashok Theatre Panaji'},
+ SM:{name:'Samrat', sub:'Samrat Ashok Theatre', area:'panjim', q:'Samrat Ashok Theatre Panaji'},
+ KA:{name:'Kala Academy', sub:'Talks & masterclasses', area:'panjim', q:'Kala Academy Campal Panaji'},
+ ST:{name:'SPM Indoor Stadium', sub:'Ceremonies', area:'panjim', q:'Dr Shyama Prasad Mukherjee Indoor Stadium Goa'},
+ MIR:{name:'Miramar Beach', sub:'Open air', area:'panjim', q:'Miramar Beach Panaji', open:true},
+ R1:{name:'INOX Porvorim', sub:'Audi 1', area:'porvorim', q:'INOX Mall De Goa Porvorim'},
+ R2:{name:'INOX Porvorim', sub:'Audi 2', area:'porvorim', q:'INOX Mall De Goa Porvorim'},
+ R3:{name:'INOX Porvorim', sub:'Audi 3', area:'porvorim', q:'INOX Mall De Goa Porvorim'},
+ R4:{name:'INOX Porvorim', sub:'Audi 4', area:'porvorim', q:'INOX Mall De Goa Porvorim'},
+ RB:{name:'Ravindra Bhavan', sub:'Auditorium', area:'margao', q:'Ravindra Bhavan Margao'},
+ RBL:{name:'Ravindra Bhavan', sub:'Open lawns', area:'margao', q:'Ravindra Bhavan Margao', open:true},
+ MM:{name:'Magic Moviez', sub:'Ponda, Audi 1', area:'ponda', q:'Magic Moviez Ponda'},
+ VAG:{name:'Vagator Beach', sub:'Helipad, open air', area:'north', q:'Vagator Helipad Goa', open:true},
+};
+const VENUE_ORDER = ['ST','P1','P2','P3','P4','MQ','AS','SM','KA','MIR','R1','R2','R3','R4','RB','RBL','MM','VAG'];
+
+const TRAVEL = {panjim:{porvorim:20,margao:50,ponda:45,north:50},porvorim:{margao:60,ponda:50,north:35},margao:{ponda:40,north:90},ponda:{north:70}};
+function travel(a,b){ if(a===b) return 10; return (TRAVEL[a]&&TRAVEL[a][b])||(TRAVEL[b]&&TRAVEL[b][a])||45; }
+
+const GROUPS = {
+ comp:{name:'Competition', c:'#d9006f'},
+ panorama:{name:'Indian Panorama', c:'#e8650f'},
+ world:{name:'World cinema', c:'#3b4ea3'},
+ focus:{name:'Country focus', c:'#108a55'},
+ classics:{name:'Indian classics', c:'#a97a00'},
+ retro:{name:'Retrospectives', c:'#7a3db0'},
+ genre:{name:'Genres & strands', c:'#0b839b'},
+ gala:{name:'Galas & specials', c:'#c8302a'},
+ goan:{name:'Goan', c:'#0d8a7c'},
+ oa:{name:'Open air', c:'#b98500'},
+};
+
+const SECTIONS = {
+ 'IC':{g:'comp',n:'International Competition',d:'The main competition. These films are in the running for the Golden Peacock and the other top jury awards.'},
+ 'BD':{g:'comp',n:'Best Debut Feature',d:'First feature films by new directors, competing for the debut award.'},
+ 'ICFT':{g:'comp',n:'ICFT UNESCO Gandhi Medal',d:'Films competing for the Gandhi Medal, given to work that reflects ideals of peace, tolerance and non-violence.'},
+ 'IP-FF':{g:'panorama',n:'Indian Panorama: Feature',d:'The curated selection of the year’s Indian feature films. Most screenings at INOX Panjim Audi 2 come with a Q&A.'},
+ 'IP-NF':{g:'panorama',n:'Indian Panorama: Non-feature',d:'Indian documentaries and shorts, usually paired with a feature in the same slot.'},
+ 'IP-BDD':{g:'panorama',n:'Best Debut Director (Indian)',d:'Debut Indian features in contention for the best debut director award.'},
+ 'IP-NH':{g:'panorama',n:'New Horizons',d:'Fresh voices in Indian cinema, a strand within the Indian Panorama.'},
+ 'CW':{g:'world',n:'Cinema of the World',d:'The festival’s big international showcase of new films from across the globe.'},
+ 'FFW':{g:'world',n:'From Festivals Worldwide',d:'Picks from the global festival circuit that have already made a mark elsewhere.'},
+ 'EF':{g:'world',n:'Emerging Filmmakers',d:'Early-career directors to keep an eye on.'},
+ 'CH-S':{g:'focus',n:'Country of Honour: Spain',d:'A spotlight on contemporary Spanish cinema.'},
+ 'PC-R':{g:'focus',n:'Partner Country: Russia',d:'A spotlight on Russian films, new and old.'},
+ 'BRICS':{g:'focus',n:'BRICS',d:'Films from BRICS member and partner countries.'},
+ 'CC-I':{g:'classics',n:'Centenary Celebration',d:'Indian classics marking the 100th birth anniversary of the artists behind them.'},
+ 'HOM-I':{g:'classics',n:'Homage',d:'Tributes to Indian film figures through their landmark work.'},
+ 'GJ-I':{g:'classics',n:'Golden Jubilee',d:'Indian films celebrating 50 years since release.'},
+ 'SP-I':{g:'classics',n:'Special Presentations',d:'Hand-picked Indian films given a special screening.'},
+ 'RES.CL':{g:'retro',n:'Restored Classics',d:'Film history on the big screen, many in fresh restorations.'},
+ 'AWC':{g:'retro',n:'Andrzej Wajda Centenary',d:'A tribute to the Polish master on his 100th birth anniversary.'},
+ 'DOC':{g:'genre',n:'Docu-Montage',d:'Documentaries and essay films.'},
+ 'EXP':{g:'genre',n:'Experimental Films',d:'Work that plays with form, structure and how a film can be watched.'},
+ 'MAC':{g:'genre',n:'Macabre Cinema',d:'Horror and the darker end of genre, mostly in late-night slots.'},
+ 'ML':{g:'genre',n:'Mission LiFE',d:'Films about the environment and how we live with the planet.'},
+ 'ANI':{g:'genre',n:'Animation',d:'Animated features for adults and families.'},
+ 'FAF':{g:'genre',n:'Films about Films',d:'Documentaries about filmmakers and the craft of cinema.'},
+ 'MIFF':{g:'genre',n:'Best of MIFF',d:'A package of shorts and documentaries from the Mumbai International Film Festival.'},
+ 'OF':{g:'gala',n:'Opening Film',d:'The film that opens the festival on 20 November.'},
+ 'MID-F':{g:'gala',n:'Mid Fest Film',d:'The marquee screening in the middle of the festival.'},
+ 'CF':{g:'gala',n:'Closing Film',d:'The film that closes the festival on 28 November.'},
+ 'GALA':{g:'gala',n:'Gala Premiere',d:'Premieres, often with cast and crew present.'},
+ 'GOAN':{g:'goan',n:'Goan Section',d:'Films made in and about Goa, mostly in Konkani.'},
+ 'OA':{g:'oa',n:'Open Air Screenings',d:'Free evening screenings on the beach and lawns, all at 7 PM.'},
+};
+
+/* ---------- parse ---------- */
+const toMin = t => { const [h,m]=t.split(':').map(Number); return h*60+m; };
+const fmt = m => { let h=Math.floor(m/60)%24, mm=m%60, ap=h>=12?'PM':'AM'; let hh=h%12||12; return `${hh}:${String(mm).padStart(2,'0')} ${ap}`; };
+const fmtShort = m => { let h=Math.floor(m/60)%24, mm=m%60; let hh=h%12||12; return mm?`${hh}:${String(mm).padStart(2,'0')}`:`${hh}`; };
+
+const SMALL = new Set(['a','an','the','of','and','in','on','to','for','with','ka','ki','is','or','at','by','be','not']);
+function tc(s){
+  return s.split(' ').map((w,i,arr)=>{
+    if(/[0-9]/.test(w) || /\..*\./.test(w)) return w;
+    return w.split('-').map((p,j)=>{
+      const low=p.toLowerCase();
+      if(i>0 && j===0 && !/[:–]$/.test(arr[i-1]) && arr[i-1]!=='–' && SMALL.has(low.replace(/[^a-z]/g,''))) return low;
+      const k = low.search(/[a-zà-ÿ]/i);
+      return k<0?low:low.slice(0,k)+low.charAt(k).toUpperCase()+low.slice(k+1);
+    }).join('-');
+  }).join(' ');
+}
+
+const FILMS = {};
+FILM_DATA.trim().split('\n').forEach(l=>{
+  const [id,T,d,c,lang,m,y,s]=l.split('|');
+  const secs=s.split(',');
+  FILMS[id]={id,T,t:tc(T),d,c,lang,m:+m,y,secs,g:SECTIONS[secs[0]].g,shows:[]};
+});
+
+const SLOTS=[];
+SCHED.trim().split('\n').forEach(l=>{
+  const p=l.trim().split(/\s+/);
+  const day=+p[0], v=p[1], start=toMin(p[2]), ids=p[3].split('+'), qa=p[4]==='qa';
+  const dur=ids.reduce((a,i)=>a+FILMS[i].m,0)+(qa?20:0);
+  const s={key:`${day}-${v}-${p[2]}`,type:'film',day,v,start,end:start+dur,ids,qa};
+  SLOTS.push(s); ids.forEach(i=>FILMS[i].shows.push(s));
+});
+TALKS.forEach(([day,a,b,kind,title,sp,mod],i)=>{
+  SLOTS.push({key:`${day}-KA-${a}`,type:'talk',day,v:'KA',start:toMin(a),end:toMin(b),kind,title,sp,mod});
+});
+EVENTS.forEach(([day,v,a,dur,title,sub])=>{
+  SLOTS.push({key:`${day}-${v}-${a}-ev`,type:'event',day,v,start:toMin(a),end:toMin(a)+dur,title,sub});
+});
+SLOTS.sort((a,b)=>a.day-b.day||a.start-b.start||VENUE_ORDER.indexOf(a.v)-VENUE_ORDER.indexOf(b.v));
+const SLOT_BY_KEY = Object.fromEntries(SLOTS.map(s=>[s.key,s]));
+const splitNames = s => (s||'').split(/,\s*|\s+&\s+/).map(x=>x.trim()).filter(Boolean);
+const PIDX = {};
+const pref = n => (PIDX[n] = PIDX[n] || {films:[], talks:[]});
+Object.values(FILMS).forEach(f=>splitNames(f.d).forEach(n=>pref(n).films.push(f.id)));
+SLOTS.filter(s=>s.type==='talk').forEach(s=>{
+  splitNames(s.sp).forEach(n=>pref(n).talks.push({key:s.key,role:'Speaker'}));
+  splitNames(s.mod).forEach(n=>pref(n).talks.push({key:s.key,role:'Moderator'}));
+});
+const BASES = {'':'Choose…', panjim:'Panjim / Miramar', porvorim:'Porvorim / Calangute side', margao:'Margao / South Goa', ponda:'Ponda', north:'North Goa beaches'};
+const TRANSIT = {
+  panjimInox:{rk:'INOX Panjim: service lane in front of Old GMC', bus:'Routes 1, 2 and 3 stop at INOX Old GMC; Route 4 ends at INOX Panaji'},
+  samrat:{rk:'Samrat Ashok: in front of Samrat Theatre', bus:'Nearest bus stop is INOX Old GMC (Routes 1–3)'},
+  kala:{rk:'Kala Academy: side of the junction', bus:'All four routes stop at Kala Academy'},
+  porvorim:{rk:'INOX Porvorim: side lane of Mall De Goa', bus:'Route 1 ends at INOX Porvorim'},
+  margao:{rk:'', bus:'Route 3 ends at Ravindra Bhavan, Madgaon'},
+  ponda:{rk:'', bus:'Route 2 ends at Magic Moviez Ponda'},
+  miramar:{rk:'', bus:'Routes 1–3 start at Miramar Circle; Route 4 stops there too'},
+  stadium:{rk:'', bus:'Route 4 stops at Indoor Stadium Ground'},
+  vagator:{rk:'', bus:'No festival bus listed. Plan a cab or scooter.'},
+};
+function transitFor(v){
+  if(/^P\d$/.test(v)||v==='MQ') return TRANSIT.panjimInox;
+  return {AS:TRANSIT.samrat,SM:TRANSIT.samrat,KA:TRANSIT.kala,ST:TRANSIT.stadium,MIR:TRANSIT.miramar,RB:TRANSIT.margao,RBL:TRANSIT.margao,MM:TRANSIT.ponda,VAG:TRANSIT.vagator}[v] || (/^R\d$/.test(v)?TRANSIT.porvorim:null);
+}
+const NOTES = {
+  pushpak:'An upcoming Netflix crime series created by Sudip Sharma, starring Jaideep Ahlawat, Abhishek Banerjee and Barun Sobti. You see two episodes before it streams.',
+  panchayat:'The first episode of the new season, shown on the big screen ahead of its Prime Video premiere.',
+  dhurandhar:'The Panjim screening on 21 Nov is followed by a Q&A with members of the film’s team. The schedule doesn’t say who.',
+  dhurandhar2:'The second part of Dhurandhar. Part one also screens at the festival.',
+  tanvi:'Was an official Indian Panorama selection at last year’s IFFI.',
+  natsamrat:'The acclaimed Marathi drama starring Nana Patekar.',
+  lagaan:'Turns 25 this year. Ashutosh Gowariker is honoured at the “Legendary 25’s” session on 27 Nov.',
+  superhero:'The screening is followed by an interaction with the director.',
+  kantara:'The Panjim screening on 26 Nov has a special Q&A.',
+  kerala2:'Followed by a Q&A at the Panjim screening.',
+  hanuman:'Followed by a Q&A at the Panjim screening on 27 Nov.',
+};
+const TALK_NOTES = {
+  '7-KA-11:30':'Marks 25 years of Dil Chahta Hai, Lagaan and Chandni Bar, all released in 2001. Their directors are honoured at the session.',
+  '3-KA-14:30':'Two directors who built Indian fantasy worlds: Brahmastra and Minnal Murali.',
+};
+function baseSelect(){
+  return `<label class="basesel">Staying in <select data-base aria-label="Where you are staying">${Object.entries(BASES).map(([k,n])=>`<option value="${k}" ${S.base===k?'selected':''}>${n}</option>`).join('')}</select></label>`;
+}
+function leaveBy(s){
+  if(!S.base) return null;
+  const need = travel(S.base, VENUES[s.v].area) + 15;
+  return {t:s.start-need, need};
+}
+function bookingStatus(s){
+  const start = new Date(2026,10,20+s.day,Math.floor(s.start/60),s.start%60);
+  const open = new Date(2026,10,20+s.day-2,8,0);
+  const now = new Date();
+  if(now>=start) return 'This screening has started or finished.';
+  if(now<open) return `Booking should open ${DAYS[s.day-2]?DAYS[s.day-2].w+' '+DAYS[s.day-2].n+' Nov':open.toDateString().slice(0,10)}, 8:00 AM (two days ahead, going by last year’s rules).`;
+  return 'Booking should be open now on MyIFFI. It stays open until the show starts.';
+}
+function beforeYouGo(f, s){
+  const lb = leaveBy(s), tr = transitFor(s.v), x=VENUES[s.v];
+  const rows = [];
+  rows.push(['When', `${dayLabel(s.day)}, ${fmt(s.start)} to about ${fmt(s.end)}${s.ids.length>1?` (whole slot, ${s.ids.length} films)`:''}${s.qa?', including a Q&amp;A':''}`]);
+  rows.push(['Leave by', lb ? `<b>${fmt(lb.t)}</b> from ${esc(BASES[S.base])}. That allows about ${lb.need-15} min on the road plus 15 min to scan your card and find a seat.` : `${baseSelect()}<span class="muted"> to see when to leave.</span>`]);
+  if(lb) rows.push(['', baseSelect()]);
+  rows.push(['Tickets', bookingStatus(s)+' You can’t hold tickets for two screenings that overlap.']);
+  rows.push(['Getting there', `<a href="https://www.google.com/maps/search/?api=1&query=${enc(x.q)}" target="_blank" rel="noopener">${esc(x.name)} on Maps</a>${tr?`<br>${tr.rk?`Free rickshaw: ${esc(tr.rk)}.<br>`:''}Free bus: ${esc(tr.bus)}.`:''}`]);
+  rows.push(['Language', esc(f.lang)+(f.secs.includes('RES.CL')&&f.y&&+f.y<1930?' (silent film)':'')]);
+  if(f.m>=150) rows.push(['Heads-up', `It runs ${Math.floor(f.m/60)} h ${f.m%60} min. Eat before you go.`]);
+  if(f.secs.includes('MAC')) rows.push(['Heads-up','Macabre Cinema is the horror and dark-genre strand, usually in late slots. Expect disturbing content.']);
+  if(x.open) rows.push(['Outdoors','Open-air, starting 7 PM. Carry a light layer and mosquito repellent, and check the app for seating and entry.']);
+  rows.push(['Help desks','INOX Panjim, INOX Porvorim and Kala Academy, for tickets and festival info.']);
+  return `<div class="byg"><h3 class="sh">Before you go<span>${esc(vlabel(s.v))}</span></h3>${rows.map(([a,b])=>`<div class="bygrow"><span>${a}</span><div>${b}</div></div>`).join('')}</div>`;
+}
+
+/* Wikipedia summary for a film (loaded at runtime; text only) */
+let filmWikiCache = null;
+async function filmWiki(f){
+  filmWikiCache = filmWikiCache || store.get('fwiki', {});
+  if(f.id in filmWikiCache) return filmWikiCache[f.id];
+  const base=f.t.replace(/\s*\(.*?\)\s*/g,' ').replace(/\s+/g,' ').trim();
+  const cands = [...(f.y?[`${base} (${f.y} film)`]:[]), `${base} (film)`, `${base} (TV series)`, base];
+  for(const c of cands){
+    try{
+      const r=await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(c.replace(/ /g,'_'))+'?redirect=true');
+      if(r.status===404) continue;
+      if(!r.ok) return null;
+      const j=await r.json();
+      if(j.type!=='standard') continue;
+      const desc=(j.description||'')+' '+(j.extract||'').slice(0,300);
+      if(!/\b(film|series|documentary|miniseries)\b/i.test(j.description||'')) continue;
+      if(f.y && !new RegExp('\\b('+f.y+'|'+(+f.y-1)+'|'+(+f.y+1)+')\\b').test(desc)) continue;
+      if(!f.y && !/(indian|india|hindi|tamil|telugu|malayalam|kannada|marathi|bengali|konkani|gujarati|assamese|odia)/i.test(desc)) continue;
+      const v={x:j.extract, u:j.content_urls&&j.content_urls.desktop&&j.content_urls.desktop.page};
+      filmWikiCache[f.id]=v; store.set('fwiki',filmWikiCache); return v;
+    }catch(e){ return null; }
+  }
+  filmWikiCache[f.id]=0; store.set('fwiki',filmWikiCache); return 0;
+}
+async function fillFilmWiki(f){
+  const el=document.getElementById('wikiabout'); if(!el) return;
+  const v=await filmWiki(f);
+  if(!el.isConnected || el.dataset.film!==f.id) return;
+  if(v&&v.x){ el.innerHTML=`<h3 class="sh">About the film</h3><p class="wx">${esc(v.x)}</p><a class="credit" href="${v.u}" target="_blank" rel="noopener">From Wikipedia</a>`; el.hidden=false; }
+}
+const BOOK = {portal:'https://my.iffigoa.org/', reg:'https://www.iffigoa.org/delegate-registration', policy:'https://filmguide.iffigoa.org/ticket-policy/', site:'https://www.iffigoa.org/'};
+
+/* ---------- state ---------- */
+const store = {
+  get(k,d){ try{ const v=localStorage.getItem('iffi57-'+k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem('iffi57-'+k, JSON.stringify(v)); }catch(e){} }
+};
+function todayIndex(){
+  const n=new Date();
+  if(n.getFullYear()===2026 && n.getMonth()===10 && n.getDate()>=20 && n.getDate()<=28) return n.getDate()-20;
+  return -1;
+}
+const TODAY = todayIndex();
+const S = {
+  tab:'schedule', day: TODAY>=0?TODAY:0, view: store.get('view','list'),
+  area:'all', group:'all', fq:'', fgroup:'all', fsort:'az',
+  plan:new Set(store.get('plan',[])), watch:new Set(store.get('watch',[])), base:store.get('base',''),
+};
+const savePlan=()=>store.set('plan',[...S.plan]);
+const saveWatch=()=>store.set('watch',[...S.watch]);
+
+/* ---------- helpers ---------- */
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const enc = encodeURIComponent;
+function hash(s){ let h=2166136261; for(const ch of s){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619);} return h>>>0; }
+function slotGroup(s){
+  if(s.type==='talk') return 'talk';
+  if(s.type==='event') return 'gala';
+  if(VENUES[s.v].open) return 'oa';
+  return FILMS[s.ids[s.ids.length-1]].g;
+}
+function slotColor(s){ const g=slotGroup(s); return g==='talk'?'var(--ink)':GROUPS[g].c; }
+function slotMatches(s){
+  if(S.area!=='all'){ const a=VENUES[s.v].area; if(S.area==='open'){ if(!VENUES[s.v].open) return false; } else if(a!==S.area) return false; }
+  if(S.group!=='all'){
+    if(S.group==='talk') return s.type==='talk';
+    if(s.type!=='film') return false;
+    if(S.group==='oa') return !!VENUES[s.v].open;
+    return s.ids.some(i=>FILMS[i].secs.some(x=>SECTIONS[x].g===S.group));
+  }
+  return true;
+}
+function vlabel(v){ const x=VENUES[v]; return `${x.name}${x.sub&&!/Samrat Ashok|Talks|Ceremon|Open air|Auditorium/.test(x.sub)?' '+x.sub.replace('Audi ','A'):''}`; }
+function dayLabel(d){ return `${DAYS[d].w} ${DAYS[d].n} Nov`; }
+
+const STAR = (c,o=1)=>`<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 0C21.5 13 27 18.5 40 20 27 21.5 21.5 27 20 40 18.5 27 13 21.5 0 20 13 18.5 18.5 13 20 0Z" fill="${c}" opacity="${o}"/></svg>`;
+
+function poster(f, size){
+  const h=hash(f.id), g=GROUPS[f.g].c, hue=h%360;
+  const x=10+(h>>8)%70, y=8+(h>>16)%55, sc=60+(h>>4)%70;
+  const words=f.T.replace(/\(.*?\)/g,'').trim();
+  const fs = size==='lg' ? (words.length>34?22:words.length>18?30:40) : (words.length>24?9:words.length>12?11:14);
+  return `<div class="poster ${size}" style="--pc:${g};--ph:${hue}">
+    <span class="pstar" style="left:${x}%;top:${y}%;width:${sc}%">${STAR('rgba(255,255,255,.22)')}</span>
+    <span class="pstar s2" style="left:${(x+45)%90}%;top:${(y+40)%85}%;width:${sc/3}%">${STAR('rgba(255,255,255,.35)')}</span>
+    <span class="ptitle" style="font-size:${fs}px">${esc(size==='sm'?words.split(/[\s:–-]+/).slice(0,3).join(' '):words)}</span>
+    ${size==='lg'?`<span class="pmeta">${esc(f.d.split(',')[0])}${f.y?` · ${f.y}`:''}</span>`:''}
+  </div>`;
+}
+
+function secChips(f){
+  return f.secs.map(s=>`<button class="sec" style="--c:${GROUPS[SECTIONS[s].g].c}" data-sec="${s}">${esc(SECTIONS[s].n)}</button>`).join('');
+}
+function metaLine(f){
+  const bits=[f.c, f.lang, f.m+' min', f.y].filter(Boolean);
+  return `<span class="by">Directed by ${splitNames(f.d).map(n=>`<button class="plink" data-person="${esc(n)}">${esc(n)}</button>`).join(', ')}</span>`+bits.map(b=>`<span>${esc(b)}</span>`).join('');
+}
+function personLinks(n){
+  return [['Wikipedia',`https://en.wikipedia.org/w/index.php?search=${enc(n)}`],['IMDb',`https://www.imdb.com/find/?q=${enc(n)}&s=nm`],['Letterboxd',`https://letterboxd.com/search/${enc(n)}/`],['Interviews',`https://www.google.com/search?q=${enc(n+' interview')}`]]
+    .map(([a,u])=>`<a href="${u}" target="_blank" rel="noopener">${a}</a>`).join('');
+}
+function personBlock(n, excludeFilm, big){
+  const p=PEOPLE[n], ix=PIDX[n]||{films:[],talks:[]};
+  const also=ix.films.filter(i=>i!==excludeFilm);
+  return `<div class="person ${big?'big':''}">
+    <div class="phead"><span class="avatar" data-avatar="${esc(n)}" style="--ph:${hash(n)%360}">${esc(n.replace(/^(Dr\.|Prof\.)\s*/,'').split(/\s+/).map(w=>w[0]).slice(0,2).join(''))}</span>
+      <div>${big?`<h2 id="sheettitle">${esc(n)}</h2>`:`<button class="pname" data-person="${esc(n)}">${esc(n)}</button>`}${p?`<span class="prole">${esc(p.r)}</span>`:''}<a class="credit" data-credit="${esc(n)}" target="_blank" rel="noopener" hidden>Photo: Wikipedia</a></div></div>
+    ${p&&p.b?`<p class="pbio">${esc(p.b)}</p>`:''}
+    ${p&&p.w?`<div class="works"><span class="wl2">Known for</span>${p.w.map(([t,y])=>`<a href="https://letterboxd.com/search/films/${enc(t.replace(/\s*\(.*?\)/,''))}/" target="_blank" rel="noopener">${esc(t)}<small>${y}</small></a>`).join('')}</div>`:''}
+    ${also.length||ix.talks.length?`<div class="works"><span class="wl2">Also at IFFI 57</span>${also.map(i=>`<button class="here" data-film="${i}">${esc(FILMS[i].t)}<small>film</small></button>`).join('')}${ix.talks.map(t=>`<button class="here" data-talk="${t.key}">${esc(SLOT_BY_KEY[t.key].title.split(':')[0])}<small>${t.role.toLowerCase()}, ${DAYS[SLOT_BY_KEY[t.key].day].w} ${DAYS[SLOT_BY_KEY[t.key].day].n}</small></button>`).join('')}</div>`:''}
+    ${!p?`<p class="pbio muted">No profile in this guide yet. These searches will get you there:</p>`:''}
+    <div class="plinks">${personLinks(n)}</div></div>`;
+}
+function bookingBox(kind){
+  return `<div class="bookbox"><b>${kind==='talk'?'Getting in':'How booking works'}</b>
+    <p>${kind==='talk'?'Masterclasses and panels are open to registered festival delegates. Seats fill early for big names, so check the IFFI app on the day.':'Screenings are for registered delegates. You book a free e-ticket per show on MyIFFI or the official IFFI app; it also shows on your QR delegate card. Booking stays open until the show starts.'}</p>
+    ${kind==='talk'?'':'<p class="muted">Last year a no-show counted against your daily ticket quota, so cancel if plans change.</p>'}
+    <div class="bookrow"><a class="bookcta" href="${BOOK.portal}" target="_blank" rel="noopener">Open MyIFFI to book</a><a href="${BOOK.reg}" target="_blank" rel="noopener">Register as delegate</a><a href="${BOOK.policy}" target="_blank" rel="noopener">Ticket rules</a></div></div>`;
+}
+
+/* ---------- photos (Wikipedia, loaded at runtime) ---------- */
+const IMG_SKIP = new Set(['Sabu','Bapu','Rekhs']);
+const WIKI_TITLE = {};
+const ROLE_RE = /(director|filmmaker|film|actor|actress|singer|cinematographer|producer|screenwriter|critic|journalist|animator|writer|artist|casting|television|musician)/i;
+const imgCache = store.get('imgs2', {});
+const inflight = {};
+function personImg(n){
+  if(n in imgCache) return Promise.resolve(imgCache[n]);
+  if(!PEOPLE[n] || IMG_SKIP.has(n)) return Promise.resolve(0);
+  if(inflight[n]) return inflight[n];
+  return inflight[n] = (async()=>{
+    try{
+      const r = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent((WIKI_TITLE[n]||n).replace(/ /g,'_'))+'?redirect=true');
+      if(!r.ok){ if(r.status===404){ imgCache[n]=0; store.set('imgs2',imgCache); } return 0; }
+      const j = await r.json();
+      const ok = j.type==='standard' && j.thumbnail && ROLE_RE.test(j.description||'');
+      const v = ok ? {src:j.thumbnail.source.replace(/\/(\d+)px-/,'/240px-'), page:j.content_urls&&j.content_urls.desktop&&j.content_urls.desktop.page} : 0;
+      imgCache[n]=v; store.set('imgs2',imgCache); return v;
+    }catch(e){ return 0; }
+  })();
+}
+function hydrateAvatars(){
+  document.querySelectorAll('[data-avatar]:not([data-done])').forEach(el=>{
+    el.dataset.done='1';
+    const n=el.dataset.avatar;
+    personImg(n).then(v=>{
+      if(!v||!v.src) return;
+      const img=new Image(); img.alt=''; img.decoding='async';
+      img.onload=()=>{ el.classList.add('hasimg'); el.appendChild(img);
+        document.querySelectorAll('[data-credit]').forEach(c=>{ if(c.dataset.credit===n && v.page){ c.href=v.page; c.hidden=false; } }); };
+      img.onerror=()=>{ imgCache[n]=0; store.set('imgs2',imgCache); };
+      img.src=v.src;
+    });
+  });
+}
+let hydT=null;
+new MutationObserver(()=>{ clearTimeout(hydT); hydT=setTimeout(hydrateAvatars,30); }).observe(document.body,{childList:true,subtree:true});
+
+/* ---------- schedule ---------- */
+function renderDays(){
+  $('#days').innerHTML = DAYS.map((d,i)=>{
+    const n=SLOTS.filter(s=>s.day===i&&s.type==='film').length;
+    return `<button class="day ${i===S.day?'on':''}" data-day="${i}" aria-pressed="${i===S.day}">
+      <span class="dw">${d.w}${i===TODAY?' · today':''}</span><span class="dn">${d.n}</span><span class="dc">${d.tag||n+' shows'}</span></button>`;
+  }).join('');
+}
+function renderFilters(){
+  const areas=[['all','Everywhere'],['panjim','Panjim'],['porvorim','Porvorim'],['margao','Margao'],['ponda','Ponda'],['open','Open air']];
+  $('#areas').innerHTML = areas.map(([k,n])=>`<button class="chip ${S.area===k?'on':''}" data-area="${k}">${n}</button>`).join('');
+  const gs=[['all','All sections'],...Object.entries(GROUPS).map(([k,g])=>[k,g.name]),['talk','Talks']];
+  $('#groups').innerHTML = gs.map(([k,n])=>`<button class="chip ${S.group===k?'on':''}" data-group="${k}" ${k!=='all'&&k!=='talk'?`style="--dot:${GROUPS[k].c}"`:k==='talk'?'style="--dot:var(--ink)"':''}>${k!=='all'?'<i></i>':''}${n}</button>`).join('');
+  document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===S.view));
+}
+function slotCard(s){
+  const inPlan=S.plan.has(s.key);
+  const past = S.day===TODAY && nowMin()>s.end;
+  const live = S.day===TODAY && nowMin()>=s.start && nowMin()<=s.end;
+  const vtag=`<span class="ven" data-area="${VENUES[s.v].area}">${esc(vlabel(s.v))}</span>`;
+  const pin=`<button class="pin ${inPlan?'on':''}" data-pin="${s.key}" aria-label="${inPlan?'Remove from my plan':'Add to my plan'}">${STAR(inPlan?'var(--pink)':'none')}</button>`;
+  if(s.type==='talk'){
+    return `<article class="card talk ${past?'past':''}" data-talk="${s.key}" tabindex="0">
+      <div class="tcol"><b>${fmtShort(s.start)}</b><span>${fmt(s.start).slice(-2)}</span></div>
+      <div class="body"><div class="kind">${esc(s.kind)} ${live?'<em class="live">On now</em>':''}</div>
+      <h3>${esc(s.title)}</h3>${s.sp?`<div class="ppl">${splitNames(s.sp).map(n=>`<button class="pchip" data-person="${esc(n)}"><span class="mini" data-avatar="${esc(n)}" style="--ph:${hash(n)%360}"></span>${esc(n)}</button>`).join('')}${s.mod?splitNames(s.mod).map(n=>`<button class="pchip mod" data-person="${esc(n)}"><span class="mini" data-avatar="${esc(n)}" style="--ph:${hash(n)%360}"></span>${esc(n)} <small>moderator</small></button>`).join(''):''}</div>`:''}
+      <div class="row">${vtag}<span class="dur">until ${fmt(s.end)}</span></div></div>${pin}</article>`;
+  }
+  if(s.type==='event'){
+    return `<article class="card event ${past?'past':''}">
+      <div class="tcol"><b>${fmtShort(s.start)}</b><span>${fmt(s.start).slice(-2)}</span></div>
+      <div class="body"><div class="kind">Ceremony ${live?'<em class="live">On now</em>':''}</div><h3>${esc(s.title)}</h3><p class="meta"><span>${esc(s.sub)}</span></p><div class="row">${vtag}</div></div>${pin}</article>`;
+  }
+  const main=FILMS[s.ids[s.ids.length-1]];
+  const multi=s.ids.length>1;
+  return `<article class="card film ${past?'past':''}" data-film="${main.id}" data-slot="${s.key}" tabindex="0">
+    <div class="tcol"><b>${fmtShort(s.start)}</b><span>${fmt(s.start).slice(-2)}</span></div>
+    ${poster(main,'sm')}
+    <div class="body">
+      ${multi?`<div class="kind">${s.ids.length} films in one slot ${live?'<em class="live">On now</em>':''}</div>`:live?'<div class="kind"><em class="live">On now</em></div>':''}
+      ${multi?s.ids.map(i=>`<h3 class="multi" data-film="${i}">${esc(FILMS[i].t)}<small>${FILMS[i].m} min</small></h3>`).join(''):`<h3>${esc(main.t)}</h3>`}
+      ${multi?'':`<p class="meta"><span>${esc(main.d)}</span><span>${esc(main.c||'')}</span></p>`}
+      <div class="row">${vtag}<span class="dur">${fmt(s.end).replace(' ','\u00a0')} end${s.qa?' · Q&amp;A':''}</span></div>
+      <div class="secs">${[...new Set(s.ids.flatMap(i=>FILMS[i].secs))].map(x=>`<span class="dotl" style="--c:${GROUPS[SECTIONS[x].g].c}">${esc(SECTIONS[x].n)}</span>`).join('')}</div>
+    </div>${pin}</article>`;
+}
+function nowMin(){ const n=new Date(); return n.getHours()*60+n.getMinutes(); }
+
+function renderSchedule(){
+  renderDays(); renderFilters();
+  const list=SLOTS.filter(s=>s.day===S.day && slotMatches(s));
+  const films=list.filter(s=>s.type==='film').length, talks=list.filter(s=>s.type==='talk').length;
+  const venues=new Set(list.map(s=>s.v)).size;
+  $('#daysum').innerHTML = `<b>${dayLabel(S.day)}</b> <span>${films} screening${films===1?'':'s'}</span><span>${venues} venue${venues===1?'':'s'}</span>${talks?`<span>${talks} talk${talks>1?'s':''}</span>`:''}`;
+  const out=$('#sched');
+  if(!list.length){ out.innerHTML=`<p class="empty">Nothing matches on this day. Try another area or section.</p>`; return; }
+  if(S.view==='list'){
+    const parts={Morning:[],Afternoon:[],Evening:[]};
+    list.forEach(s=>parts[s.start<12*60?'Morning':s.start<17*60?'Afternoon':'Evening'].push(s));
+    out.innerHTML = Object.entries(parts).filter(([,a])=>a.length).map(([k,a])=>
+      `<section class="block"><h2 class="bh">${k}<span>${a.length}</span></h2>${a.map(slotCard).join('')}</section>`).join('');
+  } else {
+    renderTimeline(list,out);
+  }
+}
+
+function renderTimeline(list,out){
+  const PX=1.5, T0=9*60, T1=24*60;
+  const vs=VENUE_ORDER.filter(v=>list.some(s=>s.v===v));
+  const W=(T1-T0)*PX;
+  let hours=''; for(let h=9;h<=23;h++){ hours+=`<span style="left:${(h*60-T0)*PX}px">${h%12||12}${h<12?'a':'p'}</span>`; }
+  const rows=vs.map(v=>{
+    const blocks=list.filter(s=>s.v===v).map(s=>{
+      const l=(s.start-T0)*PX, w=Math.max(28,(s.end-s.start)*PX-3);
+      const label= s.type==='film'? s.ids.map(i=>FILMS[i].t).join(' + ') : s.title;
+      const on=S.plan.has(s.key);
+      const attr = s.type==='film'?`data-film="${s.ids[s.ids.length-1]}" data-slot="${s.key}"`:s.type==='talk'?`data-talk="${s.key}"`:`data-pin="${s.key}"`;
+      return `<button class="blk ${on?'on':''} ${s.type}" ${attr} style="left:${l}px;width:${w}px;--c:${slotColor(s)}" title="${esc(label)}">
+        <b>${esc(label)}</b><span>${fmtShort(s.start)}–${fmtShort(s.end)}</span></button>`;
+    }).join('');
+    return `<div class="trow"><div class="tlab"><b>${esc(VENUES[v].name)}</b><span>${esc(VENUES[v].sub)}</span></div><div class="tlane" style="width:${W}px">${blocks}</div></div>`;
+  }).join('');
+  const now = S.day===TODAY && nowMin()>T0 && nowMin()<T1 ? `<div class="nowline" style="left:${(nowMin()-T0)*PX}px"></div>`:'';
+  out.innerHTML = `<p class="hint">Scroll sideways. Each bar is a screening; tap one for details. Starred bars are in your plan.</p>
+  <div class="tl"><div class="tlscroll"><div class="thead"><div class="tlab"></div><div class="hours" style="width:${W}px">${hours}</div></div>
+  <div class="tbody" style="--w:${W}px">${rows}<div class="nowwrap" style="width:${W}px">${now}</div></div></div></div>`;
+  if(S.day===TODAY){ const sc=out.querySelector('.tlscroll'); sc.scrollLeft=Math.max(0,(nowMin()-T0)*PX-120); }
+}
+
+/* ---------- films ---------- */
+function renderFilms(){
+  const gs=[['all','All'],...Object.entries(GROUPS).map(([k,g])=>[k,g.name])];
+  $('#fgroups').innerHTML = gs.map(([k,n])=>`<button class="chip ${S.fgroup===k?'on':''}" data-fgroup="${k}" ${k!=='all'?`style="--dot:${GROUPS[k].c}"`:''}>${k!=='all'?'<i></i>':''}${n}</button>`).join('');
+  const q=S.fq.trim().toLowerCase();
+  let fl=Object.values(FILMS).filter(f=>{
+    if(S.fgroup!=='all' && !f.secs.some(x=>SECTIONS[x].g===S.fgroup) && !(S.fgroup==='oa'&&f.shows.some(s=>VENUES[s.v].open))) return false;
+    if(S.fsec && !f.secs.includes(S.fsec)) return false;
+    if(!q) return true;
+    return [f.t,f.d,f.c,f.lang,...f.secs.map(x=>SECTIONS[x].n)].join(' ').toLowerCase().includes(q);
+  });
+  if(S.fsort==='az') fl.sort((a,b)=>a.t.localeCompare(b.t));
+  if(S.fsort==='shows') fl.sort((a,b)=>b.shows.length-a.shows.length||a.t.localeCompare(b.t));
+  if(S.fsort==='len') fl.sort((a,b)=>a.m-b.m);
+  document.querySelectorAll('[data-fsort]').forEach(b=>b.classList.toggle('on',b.dataset.fsort===S.fsort));
+  $('#fsecnote').innerHTML = S.fsec?`<div class="secnote" style="--c:${GROUPS[SECTIONS[S.fsec].g].c}"><div><b>${esc(SECTIONS[S.fsec].n)}</b><p>${esc(SECTIONS[S.fsec].d)}</p></div><button class="x" data-clearsec>Clear</button></div>`:'';
+  $('#fcount').textContent = `${fl.length} film${fl.length===1?'':'s'}`;
+  $('#films').innerHTML = fl.length? fl.map(f=>{
+    const next=f.shows.find(s=>TODAY<0||s.day>=TODAY);
+    return `<article class="fcard" data-film="${f.id}" tabindex="0">${poster(f,'md')}
+      <div class="fb"><h3>${esc(f.t)}</h3><p class="meta"><span>${esc(f.d)}</span></p>
+      <p class="fx">${f.shows.length} showing${f.shows.length>1?'s':''}${next?` · next ${DAYS[next.day].w} ${DAYS[next.day].n}, ${fmt(next.start)}`:''}</p></div>
+      ${S.watch.has(f.id)?`<span class="wl" aria-label="On your watchlist">${STAR('var(--pink)')}</span>`:''}</article>`;
+  }).join('') : `<p class="empty">No films match “${esc(S.fq)}”. Try a director, country or language.</p>`;
+}
+
+/* ---------- plan ---------- */
+function renderPlan(){
+  const picked=[...S.plan].map(k=>SLOT_BY_KEY[k]).filter(Boolean).sort((a,b)=>a.day-b.day||a.start-b.start);
+  $('#planbadge').textContent = picked.length||'';
+  $('#planbadge').hidden = !picked.length;
+  const out=$('#plan');
+  let html='';
+  if(!picked.length && !S.watch.size){
+    out.innerHTML=`<div class="emptyplan">${STAR('var(--pink)')}<h3>Build your festival</h3><p>Tap the star on any screening or talk to add it here. Use “Want to watch” on a film to shortlist it, then pick the showing that fits.</p><button class="btn" data-goto="schedule">Browse today’s schedule</button></div>`;
+    return;
+  }
+  const byDay={}; picked.forEach(s=>(byDay[s.day]=byDay[s.day]||[]).push(s));
+  let clashes=0;
+  html+=Object.entries(byDay).map(([d,arr])=>{
+    let mins=0;
+    const items=arr.map((s,i)=>{
+      mins+=s.end-s.start;
+      let warn='';
+      const prev=arr[i-1];
+      if(prev){
+        const gap=s.start-prev.end, need=travel(VENUES[prev.v].area,VENUES[s.v].area);
+        if(gap<0){ warn=`<p class="warn bad">Clashes with the previous pick by ${-gap} min</p>`; clashes++; }
+        else if(gap<need){ warn=`<p class="warn">Only ${gap} min to get from ${VENUES[prev.v].name} to ${VENUES[s.v].name}. Allow about ${need}.</p>`; }
+      }
+      const title = s.type==='film'? s.ids.map(i=>FILMS[i].t).join(' + ') : s.title;
+      return `${warn}<div class="pitem" style="--c:${slotColor(s)}" ${s.type==='film'?`data-film="${s.ids[s.ids.length-1]}" data-slot="${s.key}" tabindex="0"`:s.type==='talk'?`data-talk="${s.key}" tabindex="0"`:''}>
+        <div class="ptime"><b>${fmt(s.start)}</b><span>to ${fmt(s.end)}</span></div>
+        <div class="pbody"><h3>${esc(title)}</h3><span class="ven" data-area="${VENUES[s.v].area}">${esc(vlabel(s.v))}</span>${S.base&&(!prev||VENUES[prev.v].area!==VENUES[s.v].area)?`<span class="lb">${prev?'Head over':'Leave'} by ${fmt(prev?s.start-travel(VENUES[prev.v].area,VENUES[s.v].area)-15:leaveBy(s).t)}</span>`:''}</div>
+        <button class="pin on" data-pin="${s.key}" aria-label="Remove from my plan">${STAR('var(--pink)')}</button></div>`;
+    }).join('');
+    return `<section class="pday"><h2 class="bh">${dayLabel(+d)}<span>${Math.round(mins/6)/10} h of cinema</span></h2>${items}</section>`;
+  }).join('');
+  const unplanned=[...S.watch].map(id=>FILMS[id]).filter(f=>f&&!f.shows.some(s=>S.plan.has(s.key)));
+  if(unplanned.length){
+    html+=`<section class="pday"><h2 class="bh">Want to watch, not scheduled yet<span>${unplanned.length}</span></h2>
+    ${unplanned.map(f=>`<div class="wrow"><div class="wt" data-film="${f.id}" tabindex="0">${poster(f,'sm')}<h3>${esc(f.t)}</h3></div>
+      <div class="opts">${f.shows.map(s=>`<button class="opt" data-pin="${s.key}">${DAYS[s.day].w} ${DAYS[s.day].n}, ${fmt(s.start)}<small>${esc(vlabel(s.v))}</small></button>`).join('')}</div></div>`).join('')}</section>`;
+  }
+  out.innerHTML=`<div class="planbar">${baseSelect()}<span class="muted">Used for “leave by” times.</span></div>`+(clashes?`<p class="banner">${clashes} clash${clashes>1?'es':''} in your plan. Look for the red notes.</p>`:'')+html;
+}
+
+/* ---------- talks ---------- */
+function renderTalks(){
+  const t=SLOTS.filter(s=>s.type==='talk');
+  const byDay={}; t.forEach(s=>(byDay[s.day]=byDay[s.day]||[]).push(s));
+  $('#talks').innerHTML = `<p class="lede">All sessions are at Kala Academy, Campal. It’s a short walk or rickshaw ride from INOX Panjim.</p>`+
+    Object.entries(byDay).map(([d,arr])=>`<section class="block"><h2 class="bh">${dayLabel(+d)}</h2>${arr.map(slotCard).join('')}</section>`).join('');
+}
+
+/* ---------- getting around ---------- */
+const BUS = [
+ ['Route 1','Miramar Circle','INOX Porvorim',['Marriott','SAG Ground / Campal Ground','Kala Academy','Forest Dept. Campal / INOX Old GMC','Panaji Market','GTDC Parking / Santa Monica Jetty']],
+ ['Route 2','Miramar Circle','Magic Moviez Ponda',['Marriott','SAG Ground / Campal Ground','Kala Academy','Forest Dept. Campal / INOX Old GMC','Panaji Market','GTDC Parking / Santa Monica Jetty','INOX Margao']],
+ ['Route 3','Miramar Circle','Ravindra Bhavan, Margao',['Marriott','SAG Ground / Campal Ground','Kala Academy','Forest Dept. Campal / INOX Old GMC','Panaji Market','GTDC Parking / Santa Monica Jetty']],
+ ['Route 4','Taj Cidade de Goa Horizon','INOX Panjim',['Miramar Circle','Hotel Fortune / Hotel Solmar','MacD / Marriott','Xpanse / Indoor Stadium','Bal Bhavan / SAG Ground','Kala Academy','Forest Dept. Campal']],
+];
+const RICK = [
+ ['INOX Panjim','Service lane in front of Old GMC (market turn from Dayanand Bandodkar Road)'],
+ ['Samrat Ashok','In front of Samrat Theatre at the entry and exit point'],
+ ['Kala Academy','In front of Kala Academy, parked at the side of the junction'],
+ ['INOX Porvorim','Side lane of Mall De Goa'],
+];
+function renderAround(){
+  const areaVen={};
+  VENUE_ORDER.forEach(v=>{ const x=VENUES[v]; const key=x.name; (areaVen[x.area]=areaVen[x.area]||{}); (areaVen[x.area][key]=areaVen[x.area][key]||{x,subs:[],n:0}); areaVen[x.area][key].subs.push(x.sub); areaVen[x.area][key].n+=SLOTS.filter(s=>s.v===v).length; });
+  $('#around').innerHTML = `
+  <section class="block"><h2 class="bh">Tickets</h2>${bookingBox('film')}
+    <p class="lede">Opening and closing ceremonies are by invitation only. IFFI doesn’t offer per-screening booking links, so every Book button in this guide opens MyIFFI, where you pick the show.</p></section>
+  <section class="block"><h2 class="bh">Venues</h2>
+  ${Object.entries(areaVen).map(([a,vs])=>`<div class="area"><h3 class="ah"><span class="ven" data-area="${a}">${AREAS[a].name}</span></h3>
+    ${Object.values(vs).map(({x,subs,n})=>`<a class="vrow" href="https://www.google.com/maps/search/?api=1&query=${enc(x.q)}" target="_blank" rel="noopener">
+      <div><b>${esc(x.name)}</b><span>${esc([...new Set(subs)].join(', '))}</span></div><em>${n} sessions</em><i>Map</i></a>`).join('')}</div>`).join('')}
+  </section>
+  <section class="block"><h2 class="bh">How far apart</h2>
+    <p class="lede">Rough road times used for the warnings in My plan. Panjim venues are a 10-minute hop from each other.</p>
+    <div class="dist">${[['Panjim','Porvorim',20],['Panjim','Ponda',45],['Panjim','Margao',50],['Panjim','Vagator',50],['Porvorim','Vagator',35],['Margao','Ponda',40]].map(([a,b,m])=>`<div><span>${a} to ${b}</span><b>~${m} min</b></div>`).join('')}</div>
+  </section>
+  <section class="block"><h2 class="bh">Free rickshaws<span>delegates only</span></h2>
+    ${RICK.map(([n,d])=>`<div class="rk"><b>${n}</b><p>${d}</p></div>`).join('')}
+  </section>
+  <section class="block"><h2 class="bh">Free buses<span>delegates only</span></h2>
+    ${BUS.map(([n,a,b,stops])=>`<div class="bus"><div class="bhd"><b>${n}</b><span>${a} to ${b}</span></div>
+      <ol class="stops"><li class="end">${a}</li>${stops.map(s=>`<li>${s}</li>`).join('')}<li class="end">${b}</li></ol></div>`).join('')}
+    <p class="lede">Stops differ slightly by direction; the pair shown is outbound / return.</p>
+  </section>`;
+}
+
+/* ---------- film sheet ---------- */
+function openFilm(id, slotKey){
+  const f=FILMS[id]; if(!f) return;
+  const slot=slotKey&&SLOT_BY_KEY[slotKey];
+  const companions = slot && slot.ids.length>1 ? slot.ids.filter(i=>i!==id) : [];
+  const q1=`${f.t} ${f.d.split(',')[0]}`;
+  const links=[
+    ['Watch trailer','YouTube',`https://www.youtube.com/results?search_query=${enc(q1+' trailer')}`],
+    ['Stills & posters','Google Images',`https://www.google.com/search?tbm=isch&q=${enc(q1+' film')}`],
+    ['Ratings & reviews','Letterboxd',`https://letterboxd.com/search/films/${enc(f.t)}/`],
+    ['Cast & crew','IMDb',`https://www.imdb.com/find/?q=${enc(f.t+(f.y?' '+f.y:''))}`],
+    ['Background','Wikipedia',`https://en.wikipedia.org/w/index.php?search=${enc(f.t+' film '+f.d.split(',')[0])}`],
+    ['Critics on it','Google',`https://www.google.com/search?q=${enc(q1+' review')}`],
+    ['More by the director','Google',`https://www.google.com/search?q=${enc(f.d.split(',')[0]+' filmmaker films')}`],
+  ];
+  const w=S.watch.has(id);
+  $('#sheetbody').innerHTML = `
+    <div class="hero"><a class="posterlink" href="https://www.google.com/search?tbm=isch&q=${enc(f.t+' '+f.d.split(',')[0]+' film official poster')}" target="_blank" rel="noopener" aria-label="See the official poster">${poster(f,'lg')}<span>See the official poster</span></a>
+      <div class="hinfo"><div class="hsecs">${secChips(f)}</div><h2 id="sheettitle">${esc(f.t)}</h2><p class="meta big">${metaLine(f)}</p>
+      <button class="btn ${w?'on':''}" data-watch="${id}">${STAR(w?'#fff':'none')} ${w?'On your watchlist':'Want to watch'}</button></div></div>
+    ${NOTES[id]?`<p class="note">${esc(NOTES[id])}</p>`:''}
+    <div id="wikiabout" data-film="${id}" hidden></div>
+    ${companions.length?`<div class="comp"><b>Screens together with</b>${companions.map(i=>`<button class="clink" data-film="${i}" data-slot="${slot.key}">${esc(FILMS[i].t)} <small>${FILMS[i].m} min, ${esc(SECTIONS[FILMS[i].secs[0]].n)}</small></button>`).join('')}<p>One ticket covers the whole slot.</p></div>`:''}
+    <h3 class="sh">When &amp; where<span>${f.shows.length} showing${f.shows.length>1?'s':''}</span></h3>
+    <div class="shows">${f.shows.map(s=>{ const on=S.plan.has(s.key); const past=TODAY>=0&&(s.day<TODAY||(s.day===TODAY&&nowMin()>s.start));
+      return `<div class="show ${s.key===slotKey?'cur':''} ${past?'past':''}"><div><b>${dayLabel(s.day)}, ${fmt(s.start)}</b><span class="ven" data-area="${VENUES[s.v].area}">${esc(vlabel(s.v))}</span>${s.qa?'<span class="qa">Q&amp;A after</span>':''}</div>
+      <div class="sbtns"><a class="bookbtn" href="${BOOK.portal}" target="_blank" rel="noopener" aria-label="Book ${esc(f.t)} on ${dayLabel(s.day)} at ${fmt(s.start)}">Book</a><button class="addbtn ${on?'on':''}" data-pin="${s.key}">${on?'In plan':'Add'}</button></div></div>`;}).join('')}</div>
+    ${beforeYouGo(f, slot || f.shows.find(s=>TODAY<0||s.day>=TODAY) || f.shows[0])}
+    ${bookingBox('film')}
+    <h3 class="sh">${splitNames(f.d).length>1?'The directors':'The director'}</h3>
+    ${splitNames(f.d).map(n=>personBlock(n,id,false)).join('')}
+    <h3 class="sh">Dig deeper</h3>
+    <div class="links">${links.map(([a,b,u])=>`<a href="${u}" target="_blank" rel="noopener"><b>${a}</b><span>${b}</span></a>`).join('')}</div>
+    <h3 class="sh">About the section</h3>
+    ${f.secs.map(s=>`<div class="secnote" style="--c:${GROUPS[SECTIONS[s].g].c}"><div><b>${esc(SECTIONS[s].n)}</b><p>${esc(SECTIONS[s].d)}</p></div><button class="x" data-browse="${s}">See all</button></div>`).join('')}
+  `;
+  openSheet();
+  fillFilmWiki(f);
+}
+function openSecSheet(sec){
+  const x=SECTIONS[sec];
+  const list=Object.values(FILMS).filter(f=>f.secs.includes(sec));
+  $('#sheetbody').innerHTML=`<div class="secnote big" style="--c:${GROUPS[x.g].c}"><div><b id="sheettitle">${esc(x.n)}</b><p>${esc(x.d)}</p></div></div>
+  <h3 class="sh">${list.length} films</h3>
+  <div class="minilist">${list.map(f=>`<button class="mrow" data-film="${f.id}">${poster(f,'sm')}<span><b>${esc(f.t)}</b><small>${esc(f.d)}</small></span></button>`).join('')}</div>`;
+  openSheet();
+}
+function openPerson(n){
+  $('#sheetbody').innerHTML = personBlock(n,null,true);
+  openSheet();
+}
+function openTalk(key){
+  const s=SLOT_BY_KEY[key]; if(!s) return;
+  const on=S.plan.has(key);
+  $('#sheetbody').innerHTML = `<div class="talkhero"><span class="kindtag">${esc(s.kind)}</span>
+    <h2 id="sheettitle">${esc(s.title)}</h2>
+    <p class="meta big"><span>${dayLabel(s.day)}</span><span>${fmt(s.start)} to ${fmt(s.end)}</span><span>Kala Academy, Campal</span></p>
+    ${TALK_NOTES[key]?`<p class="note">${esc(TALK_NOTES[key])}</p>`:''}
+    ${S.base?`<p class="meta big"><span>Leave ${esc(BASES[S.base])} by <b>${fmt(leaveBy(s).t)}</b></span></p>`:''}
+    <div class="bookrow"><button class="btn ${on?'on':''}" data-pin="${key}" data-refresh-talk="${key}">${STAR(on?'#fff':'none')} ${on?'In your plan':'Add to my plan'}</button>
+    <a class="btn" href="https://www.google.com/maps/search/?api=1&query=${enc(VENUES.KA.q)}" target="_blank" rel="noopener">Map</a></div></div>
+    ${s.sp?`<h3 class="sh">${splitNames(s.sp).length>1?'Speakers':'Speaker'}</h3>${splitNames(s.sp).map(n=>personBlock(n,null,false)).join('')}`:'<p class="lede">The festival hasn’t listed this session’s details in the printed schedule. Check the website or app.</p>'}
+    ${s.mod?`<h3 class="sh">Moderator</h3>${splitNames(s.mod).map(n=>personBlock(n,null,false)).join('')}`:''}
+    ${bookingBox('talk')}`;
+  openSheet();
+}
+let lastFocus=null;
+function openSheet(){ lastFocus=document.activeElement; const d=$('#sheet'); d.hidden=false; requestAnimationFrame(()=>d.classList.add('open')); $('#sheetpanel').scrollTop=0; $('#sheetclose').focus(); document.body.style.overflow='hidden'; }
+function closeSheet(){ const d=$('#sheet'); d.classList.remove('open'); setTimeout(()=>{d.hidden=true;},220); document.body.style.overflow=''; if(lastFocus) lastFocus.focus?.(); }
+
+function openGuide(){
+  $('#sheetbody').innerHTML=`<h2 id="sheettitle" class="gt">How IFFI is put together</h2>
+  <p class="lede">Every film belongs to a section. Sections are grouped below by colour, and the same colours run through the schedule, the timeline and your plan.</p>
+  ${Object.entries(GROUPS).map(([k,g])=>{ const secs=Object.entries(SECTIONS).filter(([,s])=>s.g===k);
+    return `<div class="gg" style="--c:${g.c}"><h3>${g.name}</h3>${secs.map(([code,s])=>{ const n=Object.values(FILMS).filter(f=>f.secs.includes(code)).length;
+      return `<button class="gs" data-sec="${code}"><b>${esc(s.n)}</b><span>${esc(s.d)}</span><em>${n||'–'} film${n===1?'':'s'}</em></button>`;}).join('')}</div>`;}).join('')}`;
+  openSheet();
+}
+
+/* ---------- events ---------- */
+function render(){
+  document.querySelectorAll('.tab').forEach(t=>t.hidden=t.id!=='tab-'+S.tab);
+  document.querySelectorAll('[data-tab]').forEach(b=>{ b.classList.toggle('on',b.dataset.tab===S.tab); b.setAttribute('aria-current',b.dataset.tab===S.tab?'page':'false'); });
+  if(S.tab==='schedule') renderSchedule();
+  if(S.tab==='films') renderFilms();
+  if(S.tab==='talks') renderTalks();
+  if(S.tab==='around') renderAround();
+  renderPlan();
+}
+function togglePin(k){ S.plan.has(k)?S.plan.delete(k):S.plan.add(k); savePlan(); }
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button,a,[data-film],[data-tab],[data-talk]'); if(!t) return;
+  if(t.tagName==='A') return;
+  const d=t.dataset;
+  if(d.tab){ S.tab=d.tab; render(); window.scrollTo(0,0); return; }
+  if(d.goto){ S.tab=d.goto; render(); return; }
+  if(d.day){ S.day=+d.day; renderSchedule(); return; }
+  if(d.view){ S.view=d.view; store.set('view',S.view); renderSchedule(); return; }
+  if(d.area){ S.area=d.area; renderSchedule(); return; }
+  if(d.group){ S.group=d.group; renderSchedule(); return; }
+  if(d.fgroup){ S.fgroup=d.fgroup; S.fsec=null; renderFilms(); return; }
+  if(d.fsort){ S.fsort=d.fsort; renderFilms(); return; }
+  if('clearsec' in d){ S.fsec=null; renderFilms(); return; }
+  if(d.refreshTalk){ togglePin(d.pin); openTalk(d.refreshTalk); render(); return; }
+  if(d.person){ openPerson(d.person); return; }
+  if(d.pin){ e.stopPropagation(); togglePin(d.pin);
+    if(!$('#sheet').hidden && t.classList.contains('addbtn')){ const on=S.plan.has(d.pin); t.classList.toggle('on',on); t.textContent=on?'In plan':'Add'; }
+    render(); return; }
+  if(d.watch){ S.watch.has(d.watch)?S.watch.delete(d.watch):S.watch.add(d.watch); saveWatch(); openFilm(d.watch, null); render(); return; }
+  if(d.browse){ closeSheet(); S.tab='films'; S.fgroup='all'; S.fsec=d.browse; S.fq=''; $('#fq').value=''; render(); window.scrollTo(0,0); return; }
+  if(d.sec){ openSecSheet(d.sec); return; }
+  if('guide' in d){ openGuide(); return; }
+  if(d.film){ openFilm(d.film, d.slot||t.closest('[data-slot]')?.dataset.slot); return; }
+  if(d.talk){ openTalk(d.talk); return; }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape' && !$('#sheet').hidden) closeSheet();
+  if((e.key==='Enter'||e.key===' ') && e.target.matches('[data-film][tabindex],[data-talk][tabindex]')){ e.preventDefault(); e.target.click(); }
+});
+$('#sheetclose').addEventListener('click',closeSheet);
+$('#scrim').addEventListener('click',closeSheet);
+document.addEventListener('change',e=>{
+  if(e.target.matches('[data-base]')){
+    S.base=e.target.value; store.set('base',S.base);
+    const t=document.getElementById('sheettitle');
+    if(!$('#sheet').hidden){ const w=document.getElementById('wikiabout'); if(w) openFilm(w.dataset.film, $('.show.cur')?.querySelector('[data-pin]')?.dataset.pin); }
+    renderPlan();
+  }
+});
+$('#fq').addEventListener('input',e=>{ S.fq=e.target.value; renderFilms(); });
+
+render();
+setInterval(()=>{ if(S.tab==='schedule' && S.day===TODAY) renderSchedule(); }, 60000);
+</script></body></html>
